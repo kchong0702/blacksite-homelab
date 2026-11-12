@@ -18,7 +18,7 @@ Run these steps once, in order.
 
    Scope the token to the account and to the `kelvinchong.dev` zone. The provider docs call the Edit level Write. Export `CLOUDFLARE_API_TOKEN`, `TF_VAR_account_id` and `TF_VAR_zone_id`. Apply `terraform/environments/global/cloudflare`.
 4. Pick the cloud.
-   1. Set the repository variable `ACTIVE_CLOUD` to `aws`, `gcp` or `contabo`. The Terraform workflow only runs that cloud's stack.
+   1. Set the repository variable `ACTIVE_CLOUD` to `aws`, `gcp` or `contabo`. The Terraform workflow only runs that cloud's stack. Until this variable is set, the Terraform and Ansible workflows skip.
    2. For GCP, create a project, enable the Compute Engine API and put the project id in `terraform/environments/prod/gcp/terraform.tfvars`. For Contabo, fill `product_ids` and `image_id` from `cntb get products` and `cntb get images`.
    3. In that one cloud's `terraform.tfvars` set `hosts = { blacksite = { size = "medium" } }`, export the cloud's credentials and apply. cloud-init joins the VM to the tailnet as `blacksite` with `tag:server`.
 5. Apply `terraform/environments/prod/cloudflare`. It needs the VM on the tailnet because it reads the device's IP for the `ops` and `bytebase` records. Read `terraform output -raw tunnel_token` and `terraform output -raw caddy_dns_token`.
