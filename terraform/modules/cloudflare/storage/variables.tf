@@ -11,6 +11,6 @@ variable "buckets" {
     public_domain = optional(string)
     cors_origins  = optional(list(string), [])
     cors_methods  = optional(list(string), [])
-    cors_headers  = optional(list(string), [])
+    cors_headers  = optional(list(string))
   }))
 }

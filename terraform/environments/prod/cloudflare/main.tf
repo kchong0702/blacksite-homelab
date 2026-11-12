@@ -15,6 +15,11 @@ data "cloudflare_api_token_permission_groups_list" "dns_write" {
   scope = "com.cloudflare.api.account.zone"
 }
 
+data "cloudflare_api_token_permission_groups_list" "zone_read" {
+  name  = "Zone%20Read"
+  scope = "com.cloudflare.api.account.zone"
+}
+
 data "tailscale_device" "host" {
   hostname = var.tailnet_host
   wait_for = "60s"
@@ -29,7 +34,7 @@ module "storage" {
   buckets = {
     portfolio = {
       public_domain = local.assets_host
-      cors_origins  = ["https://${var.domain}"]
+      cors_origins  = ["https://${var.domain}", "https://www.${var.domain}"]
       cors_methods  = ["GET"]
     }
     uploads = {
@@ -78,7 +83,10 @@ resource "cloudflare_api_token" "caddy_dns" {
 
   policies = [{
     effect            = "allow"
-    permission_groups = [{ id = data.cloudflare_api_token_permission_groups_list.dns_write.result[0].id }]
+    permission_groups = [
+      { id = data.cloudflare_api_token_permission_groups_list.dns_write.result[0].id },
+      { id = data.cloudflare_api_token_permission_groups_list.zone_read.result[0].id },
+    ]
     resources         = jsonencode({ "com.cloudflare.api.account.zone.${var.zone_id}" = "*" })
   }]
 }
