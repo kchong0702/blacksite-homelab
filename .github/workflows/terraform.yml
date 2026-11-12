@@ -10,19 +10,15 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    concurrency: terraform-${{ matrix.stack }}
+    concurrency:
+      group: terraform-${{ matrix.stack }}-${{ github.event_name }}
+      cancel-in-progress: false
 
     strategy:
+      fail-fast: false
       max-parallel: 1
       matrix:
-        stack:
-          - global/tailscale
-          - global/cloudflare
-          - prod/aws
-          - prod/gcp
-          - prod/contabo
-          - prod/cloudflare
-          - prod/bytebase
+        stack: ${{ fromJSON(format('["global/tailscale","global/cloudflare","prod/{0}","prod/cloudflare","prod/bytebase"]', vars.ACTIVE_CLOUD)) }}
 
     defaults:
       run:
