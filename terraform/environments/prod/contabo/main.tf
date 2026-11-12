@@ -7,7 +7,7 @@ resource "tailscale_tailnet_key" "host" {
 
   reusable      = false
   preauthorized = true
-  expiry        = 3600
+  expiry        = 86400
   tags          = ["tag:server"]
 }
 

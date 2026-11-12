@@ -7,7 +7,7 @@ packages:
 %{ endif ~}
 runcmd:
   - curl -fsSL https://tailscale.com/install.sh | sh
-  - tailscale up --auth-key=${tailscale_auth_key} --hostname=${hostname} --advertise-tags=${join(",", tags)} --ssh
+  - tailscale up --auth-key=${tailscale_auth_key} --hostname=${hostname} --advertise-tags=${join(",", tags)} --ssh --accept-dns=false
 %{ if harden_public_ip ~}
   - ufw default deny incoming
   - ufw allow in on tailscale0
