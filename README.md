@@ -55,7 +55,16 @@ Secrets never enter git. Terraform reads them from `TF_VAR_*` and provider varia
 | Ansible | `CLOUDFLARE_DNS_API_TOKEN`, `CLOUDFLARE_TUNNEL_TOKEN`, `BYTEBASE_POSTGRES_PASSWORD`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `OPS_DATABASE_URL`, and `TAILSCALE_AUTH_KEY` only for a host that cloud-init did not join |
 | GitHub Actions only | `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` (a Tailscale OAuth client that mints `tag:ci` keys) |
 
-The GitHub workflows read the same values from repository secrets and variables. See `.github/workflows/terraform.yml` and `ansible.yml` for the secret names.
+## GitHub repository settings
+
+The workflows read the same values from the repository. These are repository variables.
+
+- `TF_CLOUD_ORGANIZATION`
+- `TAILSCALE_TAILNET`
+- `BYTEBASE_URL`
+- `ACTIVE_CLOUD`, one of `aws`, `gcp` or `contabo`
+
+Everything else is a repository secret. Some secrets use a different name from the environment variable they feed. See `.github/workflows/terraform.yml` and `ansible.yml` for the exact names.
 
 ## Runbooks
 
