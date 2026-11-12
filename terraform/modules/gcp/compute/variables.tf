@@ -1,6 +1,5 @@
 variable "name" {
-  description = "Instance name."
-  type        = string
+  type = string
 }
 
 variable "machine_type" {
@@ -16,7 +15,6 @@ variable "subnetwork_id" {
 }
 
 variable "user_data" {
-  description = "Rendered cloud-init."
-  type        = string
-  sensitive   = true
+  type      = string
+  sensitive = true
 }

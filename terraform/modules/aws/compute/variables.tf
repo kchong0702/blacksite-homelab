@@ -1,6 +1,5 @@
 variable "name" {
-  description = "Instance name."
-  type        = string
+  type = string
 }
 
 variable "instance_type" {
@@ -12,7 +11,6 @@ variable "security_group_ids" {
 }
 
 variable "user_data" {
-  description = "Rendered cloud-init."
-  type        = string
-  sensitive   = true
+  type      = string
+  sensitive = true
 }

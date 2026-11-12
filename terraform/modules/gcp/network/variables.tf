@@ -1,6 +1,5 @@
 variable "name" {
-  description = "Name of the network and subnetwork."
-  type        = string
+  type = string
 }
 
 variable "region" {

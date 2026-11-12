@@ -1,6 +1,5 @@
 variable "name" {
-  description = "Instance display name."
-  type        = string
+  type = string
 }
 
 variable "product_id" {
@@ -24,7 +23,6 @@ variable "period" {
 }
 
 variable "user_data" {
-  description = "Rendered cloud-init."
-  type        = string
-  sensitive   = true
+  type      = string
+  sensitive = true
 }
