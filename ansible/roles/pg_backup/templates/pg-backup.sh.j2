@@ -11,7 +11,7 @@ trap 'rm -rf "$dir"' EXIT
 
 docker exec bytebase-postgres pg_dump -U bytebase bytebase | gzip > "$dir/bytebase-$stamp.sql.gz"
 {% for db in pg_backup_databases %}
-docker run --rm {{ pg_backup_postgres_image }} pg_dump "${{ db.url_env }}" | gzip > "$dir/{{ db.name }}-$stamp.sql.gz"
+docker run --rm -e {{ db.url_env }} {{ pg_backup_postgres_image }} sh -c 'pg_dump "${{ db.url_env }}"' | gzip > "$dir/{{ db.name }}-$stamp.sql.gz"
 {% endfor %}
 
 docker run --rm \
