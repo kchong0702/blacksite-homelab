@@ -1,0 +1,35 @@
+- name: Write the backup environment file
+  ansible.builtin.template:
+    src: pg-backup.env.j2
+    dest: "{{ pg_backup_env_file }}"
+    mode: "0600"
+  no_log: true
+
+- name: Install the backup script
+  ansible.builtin.template:
+    src: pg-backup.sh.j2
+    dest: "{{ pg_backup_script }}"
+    mode: "0755"
+
+- name: Install the backup service
+  ansible.builtin.template:
+    src: pg-backup.service.j2
+    dest: /etc/systemd/system/pg-backup.service
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Install the backup timer
+  ansible.builtin.template:
+    src: pg-backup.timer.j2
+    dest: /etc/systemd/system/pg-backup.timer
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Flush handlers so systemd sees the units
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable the backup timer
+  ansible.builtin.systemd:
+    name: pg-backup.timer
+    enabled: true
+    state: started

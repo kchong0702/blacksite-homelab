@@ -1,0 +1,25 @@
+- name: Install Tailscale
+  ansible.builtin.shell:
+    cmd: set -o pipefail && curl -fsSL https://tailscale.com/install.sh | sh
+    executable: /bin/bash
+    creates: /usr/bin/tailscale
+
+- name: Read Tailscale state
+  ansible.builtin.command: tailscale status --json
+  register: tailscale_status
+  changed_when: false
+  failed_when: false
+
+- name: Join the tailnet
+  ansible.builtin.command: >-
+    tailscale up
+    --auth-key={{ tailscale_auth_key }}
+    --hostname={{ tailscale_hostname }}
+    --advertise-tags={{ tailscale_tags }}
+  when: (tailscale_status.stdout | default('{}', true) | from_json).BackendState | default('') != 'Running'
+  changed_when: true
+  no_log: true
+
+- name: Enable Tailscale SSH
+  ansible.builtin.command: tailscale set --ssh --accept-dns=false
+  changed_when: false

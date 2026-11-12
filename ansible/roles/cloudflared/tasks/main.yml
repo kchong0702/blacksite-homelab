@@ -1,0 +1,24 @@
+- name: Create the cloudflared directory
+  ansible.builtin.file:
+    path: "{{ cloudflared_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Write the cloudflared environment file
+  ansible.builtin.copy:
+    dest: "{{ cloudflared_dir }}/.env"
+    content: "TUNNEL_TOKEN={{ cloudflared_tunnel_token }}\n"
+    mode: "0600"
+  no_log: true
+  notify: Restart cloudflared
+
+- name: Render the compose file
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ cloudflared_dir }}/compose.yaml"
+    mode: "0644"
+
+- name: Start cloudflared
+  community.docker.docker_compose_v2:
+    project_src: "{{ cloudflared_dir }}"
+    state: present

@@ -1,0 +1,7 @@
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:{{ cloudflared_version }}
+    restart: always
+    command: tunnel --no-autoupdate run
+    env_file: .env
+    network_mode: host

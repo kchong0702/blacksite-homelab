@@ -1,0 +1,3 @@
+tailscale_hostname: blacksite
+tailscale_tags: tag:server
+tailscale_auth_key: "{{ lookup('ansible.builtin.env', 'TAILSCALE_AUTH_KEY', default=undef()) }}"

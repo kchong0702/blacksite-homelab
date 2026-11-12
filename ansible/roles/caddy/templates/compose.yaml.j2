@@ -1,0 +1,14 @@
+services:
+  caddy:
+    image: {{ caddy_image }}
+    restart: always
+    network_mode: host
+    env_file: .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,10 @@
+{
+	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+}
+{% for site in caddy_sites %}
+
+{{ site.host }} {
+	bind {{ ansible_tailscale0.ipv4.address }}
+	reverse_proxy {{ site.upstream }}
+}
+{% endfor %}

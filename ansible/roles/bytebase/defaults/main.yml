@@ -1,0 +1,2 @@
+bytebase_dir: /opt/bytebase
+bytebase_postgres_password: "{{ lookup('ansible.builtin.env', 'BYTEBASE_POSTGRES_PASSWORD', default=undef()) }}"

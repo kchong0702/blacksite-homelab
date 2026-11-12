@@ -1,0 +1,8 @@
+pg_backup_aws_cli_image: amazon/aws-cli:2.40.1
+pg_backup_postgres_image: postgres:17-alpine
+pg_backup_env_file: /etc/pg-backup.env
+pg_backup_script: /usr/local/bin/pg-backup
+pg_backup_env:
+  R2_ACCOUNT_ID: "{{ lookup('ansible.builtin.env', 'R2_ACCOUNT_ID', default=undef()) }}"
+  AWS_ACCESS_KEY_ID: "{{ lookup('ansible.builtin.env', 'R2_ACCESS_KEY_ID', default=undef()) }}"
+  AWS_SECRET_ACCESS_KEY: "{{ lookup('ansible.builtin.env', 'R2_SECRET_ACCESS_KEY', default=undef()) }}"
