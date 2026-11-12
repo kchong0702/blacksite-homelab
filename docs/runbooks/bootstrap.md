@@ -1,6 +1,6 @@
 # Bootstrap
 
-Run once, in this order. Nothing here is applied until you have the accounts.
+Run these steps once, in order.
 
 1. Create the HCP Terraform organization and seven workspaces: `global-tailscale`, `global-cloudflare`, `prod-aws`, `prod-gcp`, `prod-contabo`, `prod-cloudflare`, `prod-bytebase`. Set each workspace's execution mode to Local. Export `TF_CLOUD_ORGANIZATION` and `TF_TOKEN_app_terraform_io`.
 2. Create a Tailscale OAuth client with the auth keys, ACL, DNS and devices scopes and export `TAILSCALE_OAUTH_CLIENT_ID`, `TAILSCALE_OAUTH_CLIENT_SECRET` and `TAILSCALE_TAILNET`. Apply `terraform/environments/global/tailscale`. If the tailnet already has a policy, import it first with `terraform import module.tailnet.tailscale_acl.this acl`.
