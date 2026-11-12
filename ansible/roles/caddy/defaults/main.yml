@@ -1,0 +1,4 @@
+caddy_version: 2.11.9
+caddy_dir: /opt/caddy
+caddy_image: "caddy-cloudflare:{{ caddy_version }}"
+caddy_dns_api_token: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_DNS_API_TOKEN') }}"

@@ -1,0 +1,5 @@
+base_packages:
+  - curl
+  - ca-certificates
+  - unattended-upgrades
+  - ufw

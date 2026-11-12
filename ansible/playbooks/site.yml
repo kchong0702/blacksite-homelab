@@ -1,0 +1,12 @@
+- name: Provision the blacksite host
+  hosts: servers
+  become: true
+  roles:
+    - tailscale
+    - base
+    - docker
+    - app_host
+    - caddy
+    - cloudflared
+    - bytebase
+    - pg_backup

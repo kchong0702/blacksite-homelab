@@ -1,0 +1,23 @@
+- name: Create the Bytebase directory
+  ansible.builtin.file:
+    path: "{{ bytebase_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Write the Bytebase environment file
+  ansible.builtin.copy:
+    dest: "{{ bytebase_dir }}/.env"
+    content: "BYTEBASE_POSTGRES_PASSWORD={{ bytebase_postgres_password }}\n"
+    mode: "0600"
+  no_log: true
+
+- name: Render the compose file
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ bytebase_dir }}/compose.yaml"
+    mode: "0644"
+
+- name: Start Bytebase
+  community.docker.docker_compose_v2:
+    project_src: "{{ bytebase_dir }}"
+    state: present

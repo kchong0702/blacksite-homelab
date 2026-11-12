@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+set -a
+. {{ pg_backup_env_file }}
+set +a
+
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+dir=$(mktemp -d)
+trap 'rm -rf "$dir"' EXIT
+
+docker exec bytebase-postgres pg_dump -U bytebase bytebase | gzip > "$dir/bytebase-$stamp.sql.gz"
+{% for db in pg_backup_databases %}
+docker run --rm {{ pg_backup_postgres_image }} pg_dump "${{ db.url_env }}" | gzip > "$dir/{{ db.name }}-$stamp.sql.gz"
+{% endfor %}
+
+docker run --rm \
+  -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
+  -e AWS_DEFAULT_REGION=auto \
+  -e AWS_REQUEST_CHECKSUM_CALCULATION=when_required \
+  -e AWS_RESPONSE_CHECKSUM_VALIDATION=when_required \
+  -v "$dir":/backup:ro \
+  {{ pg_backup_aws_cli_image }} \
+  s3 sync /backup "s3://{{ backup_bucket }}/$stamp/" \
+  --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"

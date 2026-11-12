@@ -1,0 +1,21 @@
+domain: kelvinchong.dev
+ops_subdomain: ops
+bytebase_subdomain: bytebase
+ezbot_subdomain: ezbot
+
+caddy_sites:
+  - host: "{{ ops_subdomain }}.{{ domain }}"
+    upstream: 127.0.0.1:5174
+  - host: "{{ bytebase_subdomain }}.{{ domain }}"
+    upstream: 127.0.0.1:8080
+
+bytebase_version: 3.24.1
+bytebase_external_url: "https://{{ bytebase_subdomain }}.{{ domain }}"
+
+deploy_user: deploy
+app_dir: /srv/renderverse
+
+backup_bucket: backups
+pg_backup_databases:
+  - name: ops
+    url_env: OPS_DATABASE_URL

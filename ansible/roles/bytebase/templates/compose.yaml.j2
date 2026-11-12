@@ -1,0 +1,37 @@
+services:
+  bytebase:
+    image: bytebase/bytebase:{{ bytebase_version }}
+    init: true
+    restart: always
+    command:
+      - --external-url
+      - "{{ bytebase_external_url }}"
+    environment:
+      PG_URL: "postgresql://bytebase:${BYTEBASE_POSTGRES_PASSWORD}@bytebase-postgres:5432/bytebase"
+    depends_on:
+      bytebase-postgres:
+        condition: service_healthy
+    volumes:
+      - bytebase-data:/var/opt/bytebase
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  bytebase-postgres:
+    image: postgres:17-alpine
+    container_name: bytebase-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: bytebase
+      POSTGRES_PASSWORD: "${BYTEBASE_POSTGRES_PASSWORD:?set BYTEBASE_POSTGRES_PASSWORD}"
+      POSTGRES_DB: bytebase
+    volumes:
+      - bytebase-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bytebase -d bytebase"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  bytebase-data:
+  bytebase-postgres-data:

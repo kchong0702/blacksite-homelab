@@ -1,0 +1,50 @@
+- name: Gather the Tailscale interface facts
+  ansible.builtin.setup:
+    gather_subset: network
+    filter: ansible_tailscale0
+
+- name: Create the Caddy directory
+  ansible.builtin.file:
+    path: "{{ caddy_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy the Caddy Dockerfile
+  ansible.builtin.copy:
+    src: Dockerfile
+    dest: "{{ caddy_dir }}/Dockerfile"
+    mode: "0644"
+
+- name: Build the Caddy image with the Cloudflare DNS plugin
+  community.docker.docker_image:
+    name: "{{ caddy_image }}"
+    source: build
+    build:
+      path: "{{ caddy_dir }}"
+    force_source: false
+
+- name: Write the Caddy environment file
+  ansible.builtin.copy:
+    dest: "{{ caddy_dir }}/.env"
+    content: "CLOUDFLARE_API_TOKEN={{ caddy_dns_api_token }}\n"
+    mode: "0600"
+  no_log: true
+  notify: Restart Caddy
+
+- name: Render the Caddyfile
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: "{{ caddy_dir }}/Caddyfile"
+    mode: "0644"
+  notify: Restart Caddy
+
+- name: Render the compose file
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ caddy_dir }}/compose.yaml"
+    mode: "0644"
+
+- name: Start Caddy
+  community.docker.docker_compose_v2:
+    project_src: "{{ caddy_dir }}"
+    state: present
