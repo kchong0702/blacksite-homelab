@@ -1,0 +1,77 @@
+name: Terraform
+
+on:
+  pull_request:
+    paths: [terraform/**, .github/workflows/terraform.yml]
+  push:
+    branches: [main]
+    paths: [terraform/**, .github/workflows/terraform.yml]
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    concurrency: terraform-${{ matrix.stack }}
+
+    strategy:
+      max-parallel: 1
+      matrix:
+        stack:
+          - global/tailscale
+          - global/cloudflare
+          - prod/aws
+          - prod/gcp
+          - prod/contabo
+          - prod/cloudflare
+          - prod/bytebase
+
+    defaults:
+      run:
+        working-directory: terraform/environments/${{ matrix.stack }}
+
+    env:
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_APP_TERRAFORM_IO }}
+      TF_CLOUD_ORGANIZATION: ${{ vars.TF_CLOUD_ORGANIZATION }}
+      TF_VAR_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      TF_VAR_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      TF_VAR_ops_api_db_username: ${{ secrets.OPS_API_DB_USERNAME }}
+      TF_VAR_ops_api_db_password: ${{ secrets.OPS_API_DB_PASSWORD }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TAILSCALE_OAUTH_CLIENT_ID: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+      TAILSCALE_OAUTH_CLIENT_SECRET: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
+      TAILSCALE_TAILNET: ${{ vars.TAILSCALE_TAILNET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      CNTB_OAUTH2_CLIENT_ID: ${{ secrets.CNTB_OAUTH2_CLIENT_ID }}
+      CNTB_OAUTH2_CLIENT_SECRET: ${{ secrets.CNTB_OAUTH2_CLIENT_SECRET }}
+      CNTB_OAUTH2_USER: ${{ secrets.CNTB_OAUTH2_USER }}
+      CNTB_OAUTH2_PASS: ${{ secrets.CNTB_OAUTH2_PASS }}
+      BYTEBASE_URL: ${{ vars.BYTEBASE_URL }}
+      BYTEBASE_SERVICE_ACCOUNT: ${{ secrets.BYTEBASE_SERVICE_ACCOUNT }}
+      BYTEBASE_SERVICE_KEY: ${{ secrets.BYTEBASE_SERVICE_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+
+      - name: Install tools
+        uses: jdx/mise-action@v5.2.7
+
+      - name: Join the tailnet
+        if: matrix.stack == 'prod/bytebase'
+        uses: tailscale/github-action@v4.4.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Init
+        run: terraform init -input=false
+
+      - name: Plan
+        if: github.event_name == 'pull_request'
+        run: terraform plan -input=false
+
+      - name: Apply
+        if: github.event_name == 'push'
+        run: terraform apply -input=false -auto-approve
