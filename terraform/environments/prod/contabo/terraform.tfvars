@@ -1,4 +1,3 @@
-# Placeholders: fill the ids from `cntb get products` and `cntb get images` before the first apply.
 hosts = {
   blacksite = { size = "medium" }
 }
