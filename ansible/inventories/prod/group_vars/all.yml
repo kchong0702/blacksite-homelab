@@ -1,7 +1,6 @@
 domain: kelvinchong.dev
 ops_subdomain: ops
 bytebase_subdomain: bytebase
-ezbot_subdomain: ezbot
 
 caddy_sites:
   - host: "{{ ops_subdomain }}.{{ domain }}"
