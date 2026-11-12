@@ -1,0 +1,46 @@
+name: Ansible
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [ansible/**]
+
+concurrency: ansible
+
+jobs:
+  site:
+    if: vars.ACTIVE_CLOUD != ''
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ansible
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+
+      - name: Install tools
+        uses: jdx/mise-action@v5.2.7
+
+      - name: Join the tailnet
+        uses: tailscale/github-action@v4.4.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Install collections
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Run the playbook
+        run: ansible-playbook playbooks/site.yml --user root
+        env:
+          CLOUDFLARE_DNS_API_TOKEN: ${{ secrets.CLOUDFLARE_DNS_API_TOKEN }}
+          CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
+          BYTEBASE_POSTGRES_PASSWORD: ${{ secrets.BYTEBASE_POSTGRES_PASSWORD }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
