@@ -10,6 +10,7 @@ concurrency: ansible
 
 jobs:
   site:
+    if: vars.ACTIVE_CLOUD != ''
     runs-on: ubuntu-latest
 
     defaults:

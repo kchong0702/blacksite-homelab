@@ -9,6 +9,7 @@ on:
 
 jobs:
   terraform:
+    if: vars.ACTIVE_CLOUD != ''
     runs-on: ubuntu-latest
     concurrency:
       group: terraform-${{ matrix.stack }}-${{ github.event_name }}
