@@ -82,11 +82,11 @@ resource "cloudflare_api_token" "caddy_dns" {
   name = "caddy-dns-01"
 
   policies = [{
-    effect            = "allow"
+    effect = "allow"
     permission_groups = [
       { id = data.cloudflare_api_token_permission_groups_list.dns_write.result[0].id },
       { id = data.cloudflare_api_token_permission_groups_list.zone_read.result[0].id },
     ]
-    resources         = jsonencode({ "com.cloudflare.api.account.zone.${var.zone_id}" = "*" })
+    resources = jsonencode({ "com.cloudflare.api.account.zone.${var.zone_id}" = "*" })
   }]
 }
