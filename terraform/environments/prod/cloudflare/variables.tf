@@ -4,13 +4,11 @@ variable "domain" {
 }
 
 variable "account_id" {
-  description = "Cloudflare account id. Set through TF_VAR_account_id."
-  type        = string
+  type = string
 }
 
 variable "zone_id" {
-  description = "Zone id of the domain. Set through TF_VAR_zone_id."
-  type        = string
+  type = string
 }
 
 variable "ezbot_subdomain" {
