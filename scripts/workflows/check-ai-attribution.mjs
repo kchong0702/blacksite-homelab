@@ -1,5 +1,5 @@
 // Rejects AI attribution in commits and PRs, and enforces Conventional Commits.
-// Run by the commit-policy GitHub workflow; the hook modes also work as plain git hooks.
+// Run by the pre-commit commit-msg hook and the commit-policy GitHub workflow.
 //
 //   --message-file <path>  commit-msg hook: check the message being written
 //   --pre-push <remote>    pre-push hook: check commits not yet on <remote> (refs on stdin)
