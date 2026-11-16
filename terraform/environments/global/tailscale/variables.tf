@@ -1,3 +1,4 @@
 variable "nameservers" {
-  type = list(string)
+  description = "DNS servers the tailnet uses for names outside MagicDNS."
+  type        = list(string)
 }
