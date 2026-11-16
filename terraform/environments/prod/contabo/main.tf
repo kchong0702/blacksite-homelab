@@ -1,7 +1,3 @@
-provider "contabo" {}
-
-provider "tailscale" {}
-
 resource "tailscale_tailnet_key" "host" {
   for_each = var.hosts
 

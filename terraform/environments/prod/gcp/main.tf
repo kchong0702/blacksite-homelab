@@ -1,10 +1,3 @@
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
-provider "tailscale" {}
-
 locals {
   machine_types = {
     small  = "e2-small"

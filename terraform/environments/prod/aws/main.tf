@@ -1,9 +1,3 @@
-provider "aws" {
-  region = var.region
-}
-
-provider "tailscale" {}
-
 locals {
   instance_types = {
     small  = "t3.small"
