@@ -1,34 +1,41 @@
 variable "domain" {
-  type    = string
-  default = "kelvinchong.dev"
+  description = "Apex domain of the zone."
+  type        = string
+  default     = "kelvinchong.dev"
 }
 
 variable "account_id" {
-  type = string
+  description = "Cloudflare account ID."
+  type        = string
 }
 
 variable "zone_id" {
-  type = string
+  description = "ID of the zone for domain."
+  type        = string
 }
 
 variable "ezbot_subdomain" {
-  type    = string
-  default = "ezbot"
+  description = "Public subdomain for ezbot, served through the tunnel."
+  type        = string
+  default     = "ezbot"
 }
 
 variable "ops_subdomain" {
-  type    = string
-  default = "ops"
+  description = "Tailnet-only subdomain for ops-web."
+  type        = string
+  default     = "ops"
 }
 
 variable "bytebase_subdomain" {
-  type    = string
-  default = "bytebase"
+  description = "Tailnet-only subdomain for Bytebase."
+  type        = string
+  default     = "bytebase"
 }
 
 variable "assets_subdomain" {
-  type    = string
-  default = "assets"
+  description = "Public subdomain for the portfolio R2 bucket."
+  type        = string
+  default     = "assets"
 }
 
 variable "tailnet_host" {

@@ -1,5 +1,6 @@
 variable "zone_id" {
-  type = string
+  description = "Zone the records are created in."
+  type        = string
 }
 
 variable "records" {

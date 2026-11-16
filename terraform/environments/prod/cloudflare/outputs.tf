@@ -1,4 +1,5 @@
 output "hostnames" {
+  description = "Full hostname of each app subdomain."
   value = {
     ezbot    = local.ezbot_host
     ops      = local.ops_host
@@ -8,11 +9,13 @@ output "hostnames" {
 }
 
 output "tunnel_token" {
-  value     = module.tunnel.token
-  sensitive = true
+  description = "Token cloudflared uses to run the tunnel."
+  value       = module.tunnel.token
+  sensitive   = true
 }
 
 output "caddy_dns_token" {
-  value     = cloudflare_api_token.caddy_dns.value
-  sensitive = true
+  description = "API token Caddy uses for DNS-01 certificates."
+  value       = cloudflare_api_token.caddy_dns.value
+  sensitive   = true
 }

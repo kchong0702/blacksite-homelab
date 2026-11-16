@@ -1,3 +1,4 @@
 output "hostnames" {
-  value = keys(cloudflare_dns_record.this)
+  description = "Hostnames of the records created."
+  value       = keys(cloudflare_dns_record.this)
 }

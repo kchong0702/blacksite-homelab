@@ -1,3 +1,4 @@
 output "bucket_names" {
-  value = keys(cloudflare_r2_bucket.this)
+  description = "Names of the buckets created."
+  value       = keys(cloudflare_r2_bucket.this)
 }

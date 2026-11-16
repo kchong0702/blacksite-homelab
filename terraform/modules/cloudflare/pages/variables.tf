@@ -1,20 +1,25 @@
 variable "account_id" {
-  type = string
+  description = "Cloudflare account ID."
+  type        = string
 }
 
 variable "zone_id" {
-  type = string
+  description = "Zone that holds the CNAME records for domains."
+  type        = string
 }
 
 variable "name" {
-  type = string
+  description = "Pages project name."
+  type        = string
 }
 
 variable "production_branch" {
-  type    = string
-  default = "main"
+  description = "Branch that Pages deploys as production."
+  type        = string
+  default     = "main"
 }
 
 variable "domains" {
-  type = list(string)
+  description = "Custom domains for the project. Each gets a CNAME record in the zone."
+  type        = list(string)
 }

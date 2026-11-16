@@ -1,3 +1,4 @@
 variable "zone_id" {
-  type = string
+  description = "ID of the kelvinchong.dev zone."
+  type        = string
 }

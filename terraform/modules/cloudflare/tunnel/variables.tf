@@ -1,13 +1,16 @@
 variable "account_id" {
-  type = string
+  description = "Cloudflare account ID."
+  type        = string
 }
 
 variable "zone_id" {
-  type = string
+  description = "Zone the tunnel's CNAME records are created in."
+  type        = string
 }
 
 variable "name" {
-  type = string
+  description = "Tunnel name."
+  type        = string
 }
 
 variable "ingress" {
