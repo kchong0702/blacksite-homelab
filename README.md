@@ -17,7 +17,7 @@ Infrastructure for one tailnet VM that hosts Bytebase and the renderverse backen
 | --- | --- |
 | Terraform | Anything behind an API: the VM, the cloud network, Tailscale policy and DNS, Cloudflare Pages, R2, tunnel, DNS and zone settings, Bytebase instances |
 | Ansible | Anything on the VM's disk: packages, firewall, Tailscale join, Docker, Caddy, cloudflared, Bytebase, the backup timer |
-| renderverse CI | The app containers in `/srv/renderverse`. This repo never runs the app compose |
+| renderverse CI | The app containers in `/srv/renderverse`. It joins the tailnet as `tag:deploy` and logs in as `deploy`. This repo never runs the app compose |
 
 ## Layout
 
@@ -53,7 +53,7 @@ Secrets never enter git. Terraform reads them from `TF_VAR_*` and provider varia
 | prod/contabo | `CNTB_OAUTH2_CLIENT_ID`, `CNTB_OAUTH2_CLIENT_SECRET`, `CNTB_OAUTH2_USER`, `CNTB_OAUTH2_PASS` |
 | prod/bytebase | `BYTEBASE_URL`, `BYTEBASE_SERVICE_ACCOUNT`, `BYTEBASE_SERVICE_KEY`, `TF_VAR_ops_api_db_username`, `TF_VAR_ops_api_db_password` |
 | Ansible | `CLOUDFLARE_DNS_API_TOKEN`, `CLOUDFLARE_TUNNEL_TOKEN`, `BYTEBASE_POSTGRES_PASSWORD`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `OPS_DATABASE_URL`, and `TAILSCALE_AUTH_KEY` only for a host that cloud-init did not join |
-| GitHub Actions only | `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` (a Tailscale OAuth client that mints `tag:ci` keys) |
+| GitHub Actions only | `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` (a Tailscale OAuth client that mints `tag:infra-ci` keys) |
 
 ## GitHub repository settings
 

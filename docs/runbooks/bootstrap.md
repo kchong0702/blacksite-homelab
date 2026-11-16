@@ -5,9 +5,10 @@ Run these steps once, in order.
 1. Create the HCP Terraform organization and seven workspaces: `global-tailscale`, `global-cloudflare`, `prod-aws`, `prod-gcp`, `prod-contabo`, `prod-cloudflare`, `prod-bytebase`. Set each workspace's execution mode to Local. Export `TF_CLOUD_ORGANIZATION` and `TF_TOKEN_app_terraform_io`.
 2. Set up Tailscale in two rounds, because an OAuth client can only pick tags that already exist in the policy.
    1. In the Tailscale admin console create a first OAuth client with only the `policy_file` and `dns` scopes. Export `TAILSCALE_OAUTH_CLIENT_ID`, `TAILSCALE_OAUTH_CLIENT_SECRET` and `TAILSCALE_TAILNET`.
-   2. If the tailnet already has a policy, import it with `terraform import module.tailnet.tailscale_acl.this acl`. Then apply `terraform/environments/global/tailscale`. This creates `tag:server` and `tag:ci`.
+   2. If the tailnet already has a policy, import it with `terraform import module.tailnet.tailscale_acl.this acl`. Then apply `terraform/environments/global/tailscale`. This creates `tag:server`, `tag:infra-ci` and `tag:deploy`.
    3. Create the Terraform client used from now on with the scopes `policy_file`, `dns`, `devices:core:read` and `auth_keys` with `tag:server`. Export its id and secret in place of the first client, then delete the first client.
-   4. Create a separate CI client with the `auth_keys` scope and `tag:ci`. Save it as the `TS_OAUTH_CLIENT_ID` and `TS_OAUTH_SECRET` GitHub secrets.
+   4. Create a separate CI client with the `auth_keys` scope and `tag:infra-ci`. Save it as this repo's `TS_OAUTH_CLIENT_ID` and `TS_OAUTH_SECRET` GitHub secrets. CI joined as `tag:infra-ci` can SSH in as `root`.
+   5. For each app repo that deploys to the VM, such as renderverse, create its own client with the `auth_keys` scope and `tag:deploy`. Save it in that repo's GitHub secrets. CI joined as `tag:deploy` can SSH in only as `deploy`.
 3. Create the Cloudflare API token from the Create Additional Tokens template, because only that template carries User > API Tokens > Edit, which `cloudflare_api_token` needs. Add these permissions.
    - Account > Cloudflare Pages > Edit
    - Account > Workers R2 Storage > Edit
