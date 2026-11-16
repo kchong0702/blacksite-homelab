@@ -1,7 +1,3 @@
-provider "cloudflare" {}
-
-provider "tailscale" {}
-
 locals {
   ezbot_host    = "${var.ezbot_subdomain}.${var.domain}"
   ops_host      = "${var.ops_subdomain}.${var.domain}"

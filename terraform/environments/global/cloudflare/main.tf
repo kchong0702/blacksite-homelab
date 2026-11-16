@@ -1,5 +1,3 @@
-provider "cloudflare" {}
-
 locals {
   zone_settings = {
     ssl              = "strict"
