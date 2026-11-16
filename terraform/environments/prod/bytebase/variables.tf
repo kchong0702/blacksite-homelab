@@ -9,11 +9,13 @@ variable "ops_api_db" {
 }
 
 variable "ops_api_db_username" {
-  type      = string
-  sensitive = true
+  description = "Database user Bytebase connects as."
+  type        = string
+  sensitive   = true
 }
 
 variable "ops_api_db_password" {
-  type      = string
-  sensitive = true
+  description = "Password of ops_api_db_username."
+  type        = string
+  sensitive   = true
 }
