@@ -17,4 +17,6 @@ jobs:
         uses: jdx/mise-action@v5.2.7
 
       - name: Run hooks
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: pre-commit run --all-files
