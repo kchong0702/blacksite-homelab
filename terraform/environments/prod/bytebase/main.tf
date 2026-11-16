@@ -1,5 +1,3 @@
-provider "bytebase" {}
-
 resource "bytebase_instance" "ops_api" {
   resource_id = "ops-api"
   title       = "ops-api"
