@@ -1,7 +1,9 @@
 output "instance_id" {
-  value = contabo_instance.this.id
+  description = "Contabo instance ID."
+  value       = contabo_instance.this.id
 }
 
 output "ipv4" {
-  value = contabo_instance.this.ip_config[0].v4[0].ip
+  description = "Public IPv4 address of the instance."
+  value       = contabo_instance.this.ip_config[0].v4[0].ip
 }

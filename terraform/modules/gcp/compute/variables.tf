@@ -1,20 +1,25 @@
 variable "name" {
-  type = string
+  description = "Name of the instance."
+  type        = string
 }
 
 variable "machine_type" {
-  type = string
+  description = "Compute Engine machine type, such as e2-small."
+  type        = string
 }
 
 variable "zone" {
-  type = string
+  description = "Zone the instance runs in."
+  type        = string
 }
 
 variable "subnetwork_id" {
-  type = string
+  description = "Subnet the instance attaches to."
+  type        = string
 }
 
 variable "user_data" {
-  type      = string
-  sensitive = true
+  description = "cloud-init config the instance runs on first boot."
+  type        = string
+  sensitive   = true
 }

@@ -11,5 +11,6 @@ variable "hosts" {
 }
 
 variable "region" {
-  type = string
+  description = "AWS region for the VMs."
+  type        = string
 }

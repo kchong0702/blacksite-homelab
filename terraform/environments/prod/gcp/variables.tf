@@ -11,13 +11,16 @@ variable "hosts" {
 }
 
 variable "project_id" {
-  type = string
+  description = "GCP project that holds the VMs."
+  type        = string
 }
 
 variable "region" {
-  type = string
+  description = "GCP region for the provider and the subnet."
+  type        = string
 }
 
 variable "zone" {
-  type = string
+  description = "GCP zone for the VMs."
+  type        = string
 }

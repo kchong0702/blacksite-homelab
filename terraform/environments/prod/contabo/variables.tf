@@ -21,6 +21,7 @@ variable "image_id" {
 }
 
 variable "region" {
-  type    = string
-  default = "EU"
+  description = "Contabo region for the VMs."
+  type        = string
+  default     = "EU"
 }

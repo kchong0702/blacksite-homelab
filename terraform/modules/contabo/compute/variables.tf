@@ -1,9 +1,11 @@
 variable "name" {
-  type = string
+  description = "Display name of the instance."
+  type        = string
 }
 
 variable "product_id" {
-  type = string
+  description = "Contabo product ID, which sets the VM size."
+  type        = string
 }
 
 variable "image_id" {
@@ -12,8 +14,9 @@ variable "image_id" {
 }
 
 variable "region" {
-  type    = string
-  default = "EU"
+  description = "Contabo region for the instance."
+  type        = string
+  default     = "EU"
 }
 
 variable "period" {
@@ -23,6 +26,7 @@ variable "period" {
 }
 
 variable "user_data" {
-  type      = string
-  sensitive = true
+  description = "cloud-init config the instance runs on first boot."
+  type        = string
+  sensitive   = true
 }
