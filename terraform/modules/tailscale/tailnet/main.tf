@@ -1,8 +1,9 @@
 resource "tailscale_acl" "this" {
   acl = jsonencode({
     tagOwners = {
-      "tag:server" = ["autogroup:admin"]
-      "tag:ci"     = ["autogroup:admin"]
+      "tag:server"   = ["autogroup:admin"]
+      "tag:infra-ci" = ["autogroup:admin"]
+      "tag:deploy"   = ["autogroup:admin"]
     }
 
     grants = [
@@ -17,9 +18,14 @@ resource "tailscale_acl" "this" {
         ip  = ["tcp:22"]
       },
       {
-        src = ["tag:ci"]
+        src = ["tag:infra-ci"]
         dst = ["tag:server"]
         ip  = ["tcp:22", "tcp:443"]
+      },
+      {
+        src = ["tag:deploy"]
+        dst = ["tag:server"]
+        ip  = ["tcp:22"]
       },
     ]
 
@@ -32,9 +38,15 @@ resource "tailscale_acl" "this" {
       },
       {
         action = "accept"
-        src    = ["tag:ci"]
+        src    = ["tag:infra-ci"]
         dst    = ["tag:server"]
-        users  = ["deploy", "root"]
+        users  = ["root"]
+      },
+      {
+        action = "accept"
+        src    = ["tag:deploy"]
+        dst    = ["tag:server"]
+        users  = ["deploy"]
       },
     ]
   })
