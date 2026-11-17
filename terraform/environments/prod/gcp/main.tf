@@ -1,10 +1,3 @@
-locals {
-  machine_types = {
-    small  = "e2-small"
-    medium = "e2-medium"
-  }
-}
-
 module "network" {
   source = "../../../modules/gcp/network"
 
@@ -37,7 +30,7 @@ module "compute" {
   source = "../../../modules/gcp/compute"
 
   name          = each.key
-  machine_type  = local.machine_types[each.value.size]
+  machine_type  = { small = "e2-small", medium = "e2-medium" }[each.value.size]
   zone          = var.zone
   subnetwork_id = module.network.subnetwork_id
   user_data     = module.cloud_init[each.key].rendered

@@ -1,10 +1,3 @@
-locals {
-  instance_types = {
-    small  = "t3.small"
-    medium = "t3.medium"
-  }
-}
-
 module "network" {
   source = "../../../modules/aws/network"
 
@@ -36,7 +29,7 @@ module "compute" {
   source = "../../../modules/aws/compute"
 
   name               = each.key
-  instance_type      = local.instance_types[each.value.size]
+  instance_type      = { small = "t3.small", medium = "t3.medium" }[each.value.size]
   security_group_ids = [module.network.security_group_id]
   user_data          = module.cloud_init[each.key].rendered
 }
