@@ -3,7 +3,6 @@ locals {
   ops_host      = "${var.ops_subdomain}.${var.domain}"
   bytebase_host = "${var.bytebase_subdomain}.${var.domain}"
   assets_host   = "${var.assets_subdomain}.${var.domain}"
-  tailnet_ipv4  = one([for address in data.tailscale_device.host.addresses : address if can(cidrnetmask("${address}/32"))])
 }
 
 data "cloudflare_api_token_permission_groups_list" "dns_write" {
@@ -14,11 +13,6 @@ data "cloudflare_api_token_permission_groups_list" "dns_write" {
 data "cloudflare_api_token_permission_groups_list" "zone_read" {
   name  = "Zone%20Read"
   scope = "com.cloudflare.api.account.zone"
-}
-
-data "tailscale_device" "host" {
-  hostname = var.tailnet_host
-  wait_for = "60s"
 }
 
 module "storage" {
@@ -61,17 +55,6 @@ module "pages" {
   zone_id    = var.zone_id
   name       = "renderverse"
   domains    = [var.domain, "www.${var.domain}"]
-}
-
-module "dns" {
-  source = "../../../modules/cloudflare/dns"
-
-  zone_id = var.zone_id
-
-  records = {
-    (local.ops_host)      = local.tailnet_ipv4
-    (local.bytebase_host) = local.tailnet_ipv4
-  }
 }
 
 resource "cloudflare_api_token" "caddy_dns" {

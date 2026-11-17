@@ -39,7 +39,7 @@ variable "assets_subdomain" {
 }
 
 variable "tailnet_host" {
-  description = "Tailnet hostname of the VM the grey-cloud records point at."
+  description = "Tailnet hostname of the VM, also used as the tunnel name."
   type        = string
   default     = "blacksite"
 }
