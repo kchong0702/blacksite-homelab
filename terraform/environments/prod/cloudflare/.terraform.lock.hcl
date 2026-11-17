@@ -20,4 +20,3 @@ provider "registry.terraform.io/cloudflare/cloudflare" {
     "zh:f809ab383cca0a5f83072981c64208cbd7fa67e986a86ee02dd2c82333221e32",
   ]
 }
-
