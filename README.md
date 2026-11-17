@@ -1,6 +1,6 @@
 # blacksite-homelab
 
-Infrastructure for one tailnet VM that hosts Bytebase and the renderverse backend services, plus the Cloudflare side of kelvinchong.dev. The VM can sit on AWS, GCP or Contabo and moves between them as credits run out.
+Infrastructure for one tailnet VM that hosts Bytebase and the renderverse backend services, plus the Cloudflare side of kelvinchong.dev. The VM can sit on AWS, GCP, Contabo or Tencent Cloud Lighthouse and moves between them as credits run out.
 
 ## The picture
 
@@ -23,12 +23,12 @@ Infrastructure for one tailnet VM that hosts Bytebase and the renderverse backen
 
 ```
 terraform/modules/        one module per resource group, no provider config
-terraform/environments/   one stack per HCP workspace: global/{tailscale,cloudflare}, prod/{aws,gcp,contabo,cloudflare,bytebase}
+terraform/environments/   one stack per HCP workspace: global/{tailscale,cloudflare}, prod/{aws,gcp,contabo,tencent,cloudflare,bytebase}
 ansible/                  inventories, playbooks/site.yml and one role per concern
 docs/runbooks/            bootstrap, move-host, add-database, restore-bytebase
 ```
 
-Only one of `prod/aws`, `prod/gcp` and `prod/contabo` holds a host at a time. Each takes `hosts = { <name> = { size = "small" | "medium" } }`.
+Only one of `prod/aws`, `prod/gcp`, `prod/contabo` and `prod/tencent` holds a host at a time. Each takes `hosts = { <name> = { size = "small" | "medium" } }`.
 
 ## Setup
 
@@ -51,6 +51,7 @@ Secrets never enter git. Terraform reads them from `TF_VAR_*` and provider varia
 | prod/aws | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
 | prod/gcp | `GOOGLE_CREDENTIALS` |
 | prod/contabo | `CNTB_OAUTH2_CLIENT_ID`, `CNTB_OAUTH2_CLIENT_SECRET`, `CNTB_OAUTH2_USER`, `CNTB_OAUTH2_PASS` |
+| prod/tencent | `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY` |
 | prod/bytebase | `BYTEBASE_URL`, `BYTEBASE_SERVICE_ACCOUNT`, `BYTEBASE_SERVICE_KEY`, `TF_VAR_ops_api_db_username`, `TF_VAR_ops_api_db_password` |
 | Ansible | `CLOUDFLARE_DNS_API_TOKEN`, `CLOUDFLARE_TUNNEL_TOKEN`, `BYTEBASE_POSTGRES_PASSWORD`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `OPS_DATABASE_URL`, and `TAILSCALE_AUTH_KEY` only for a host that cloud-init did not join |
 | GitHub Actions only | `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` (a Tailscale OAuth client that mints `tag:infra-ci` keys) |
@@ -62,7 +63,7 @@ The workflows read the same values from the repository. These are repository var
 - `TF_CLOUD_ORGANIZATION`
 - `TAILSCALE_TAILNET`
 - `BYTEBASE_URL`
-- `ACTIVE_CLOUD`, one of `aws`, `gcp` or `contabo`
+- `ACTIVE_CLOUD`, one of `aws`, `gcp`, `contabo` or `tencent`
 
 Everything else is a repository secret. Some secrets use a different name from the environment variable they feed. See `.github/workflows/terraform.yml` and `ansible.yml` for the exact names.
 

@@ -2,7 +2,7 @@
 
 Run these steps once, in order.
 
-1. Create the HCP Terraform organization and seven workspaces: `global-tailscale`, `global-cloudflare`, `prod-aws`, `prod-gcp`, `prod-contabo`, `prod-cloudflare`, `prod-bytebase`. Set each workspace's execution mode to Local. Export `TF_CLOUD_ORGANIZATION` and `TF_TOKEN_app_terraform_io`.
+1. Create the HCP Terraform organization and eight workspaces: `global-tailscale`, `global-cloudflare`, `prod-aws`, `prod-gcp`, `prod-contabo`, `prod-tencent`, `prod-cloudflare`, `prod-bytebase`. Set each workspace's execution mode to Local. Export `TF_CLOUD_ORGANIZATION` and `TF_TOKEN_app_terraform_io`.
 2. Set up Tailscale in two rounds, because an OAuth client can only pick tags that already exist in the policy.
    1. In the Tailscale admin console create a first OAuth client with only the `policy_file` and `dns` scopes. Export `TAILSCALE_OAUTH_CLIENT_ID`, `TAILSCALE_OAUTH_CLIENT_SECRET` and `TAILSCALE_TAILNET`.
    2. If the tailnet already has a policy, import it with `terraform import module.tailnet.tailscale_acl.this acl`. Then apply `terraform/environments/global/tailscale`. This creates `tag:server`, `tag:infra-ci` and `tag:deploy`.
@@ -19,9 +19,9 @@ Run these steps once, in order.
 
    Scope the token to the account and to the `kelvinchong.dev` zone. The provider docs call the Edit level Write. Export `CLOUDFLARE_API_TOKEN`, `TF_VAR_account_id` and `TF_VAR_zone_id`. Apply `terraform/environments/global/cloudflare`.
 4. Pick the cloud.
-   1. Set the repository variable `ACTIVE_CLOUD` to `aws`, `gcp` or `contabo`. The Terraform workflow only runs that cloud's stack. Until this variable is set, the Terraform and Ansible workflows skip.
-   2. For GCP, create a project, enable the Compute Engine API and put the project id in `terraform/environments/prod/gcp/terraform.tfvars`. For Contabo, fill `product_ids` and `image_id` from `cntb get products` and `cntb get images`.
-   3. In that one cloud's `terraform.tfvars` set `hosts = { blacksite = { size = "medium" } }`, export the cloud's credentials and apply. cloud-init joins the VM to the tailnet as `blacksite` with `tag:server`.
+   1. Set the repository variable `ACTIVE_CLOUD` to `aws`, `gcp`, `contabo` or `tencent`. The Terraform workflow only runs that cloud's stack. Until this variable is set, the Terraform and Ansible workflows skip.
+   2. For GCP, create a project, enable the Compute Engine API and put the project id in `terraform/environments/prod/gcp/terraform.tfvars`. For Contabo, fill `product_ids` and `image_id` from `cntb get products` and `cntb get images`. For Tencent Cloud, fill `bundle_ids` and `blueprint_id` from `tccli lighthouse DescribeBundles` and `tccli lighthouse DescribeBlueprints` in the stack's region.
+   3. In that one cloud's `terraform.tfvars` set `hosts = { blacksite = { size = "medium" } }`, export the cloud's credentials and apply. cloud-init, or a TencentCloud Automation Tools command on Lighthouse, joins the VM to the tailnet as `blacksite` with `tag:server`.
 5. Apply `terraform/environments/prod/cloudflare`. It needs the VM on the tailnet because it reads the device's IP for the `ops` and `bytebase` records. Read `terraform output -raw tunnel_token` and `terraform output -raw caddy_dns_token`.
 
    If a `renderverse` Pages project, its custom domains or DNS records for the apex, `www`, `ezbot` or `assets` already exist, import them first with the commands below. Otherwise delete the old records in the dashboard. R2 creates the `assets` record itself, so delete an existing `assets` record rather than importing it.
