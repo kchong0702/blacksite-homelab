@@ -39,6 +39,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
       CNTB_OAUTH2_CLIENT_ID: ${{ secrets.CNTB_OAUTH2_CLIENT_ID }}
       CNTB_OAUTH2_CLIENT_SECRET: ${{ secrets.CNTB_OAUTH2_CLIENT_SECRET }}
       CNTB_OAUTH2_USER: ${{ secrets.CNTB_OAUTH2_USER }}
