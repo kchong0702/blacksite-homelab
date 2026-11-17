@@ -58,15 +58,43 @@ Secrets never enter git. Terraform reads them from `TF_VAR_*` and provider varia
 
 ## GitHub repository settings
 
-The workflows read the same values from the repository. These are repository variables.
+The workflows read every value below from the repository's Settings > Secrets and variables > Actions. A missing value doesn't stop CI from starting. The step that needs it fails instead, so check this list when you set up the repo or rotate a credential.
 
-- `TF_CLOUD_ORGANIZATION`
-- `TAILSCALE_TAILNET`
-- `BYTEBASE_URL`
-- `GCP_PROJECT_ID`, which feeds `TF_VAR_project_id`
-- `ACTIVE_CLOUD`, one of `aws`, `gcp`, `contabo` or `tencent`
+### Variables
 
-Everything else is a repository secret. Some secrets use a different name from the environment variable they feed. See `.github/workflows/terraform.yml` and `ansible.yml` for the exact names.
+| Name | Value | Where it comes from |
+| --- | --- | --- |
+| `ACTIVE_CLOUD` | `aws`, `gcp`, `contabo` or `tencent` | The cloud the host runs on. Both workflows skip until it is set |
+| `TF_CLOUD_ORGANIZATION` | HCP Terraform organization name | Bootstrap step 1 |
+| `TAILSCALE_TAILNET` | Tailnet name | Tailscale admin console, Settings > General |
+| `BYTEBASE_URL` | `https://bytebase.kelvinchong.dev` | Fixed |
+| `GCP_PROJECT_ID` | GCP project id, fed to `TF_VAR_project_id` | Bootstrap step 4. Only when `ACTIVE_CLOUD` is `gcp` |
+
+### Secrets
+
+| Name | Feeds | Where it comes from |
+| --- | --- | --- |
+| `TF_TOKEN_APP_TERRAFORM_IO` | `TF_TOKEN_app_terraform_io` | An HCP Terraform user or team API token |
+| `TAILSCALE_OAUTH_CLIENT_ID`, `TAILSCALE_OAUTH_CLIENT_SECRET` | Tailscale provider | The Terraform OAuth client from bootstrap step 2.3 |
+| `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` | `tailscale/github-action` | The `tag:infra-ci` OAuth client from bootstrap step 2.4 |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare provider | The token from bootstrap step 3 |
+| `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ZONE_ID` | `TF_VAR_account_id`, `TF_VAR_zone_id` | Cloudflare dashboard, the `kelvinchong.dev` zone overview |
+| `BYTEBASE_SERVICE_ACCOUNT`, `BYTEBASE_SERVICE_KEY` | Bytebase provider | The service account from bootstrap step 8 |
+| `OPS_API_DB_USERNAME`, `OPS_API_DB_PASSWORD` | `TF_VAR_ops_api_db_username`, `TF_VAR_ops_api_db_password` | The Supabase pooler user from [add-database](docs/runbooks/add-database.md) |
+| `CLOUDFLARE_DNS_API_TOKEN` | Caddy, through Ansible | `terraform output -raw caddy_dns_token` in `prod/cloudflare`, bootstrap step 5 |
+| `CLOUDFLARE_TUNNEL_TOKEN` | cloudflared, through Ansible | `terraform output -raw tunnel_token` in `prod/cloudflare`, bootstrap step 5 |
+| `BYTEBASE_POSTGRES_PASSWORD` | Bytebase's own Postgres, through Ansible | Generate one, for example with `openssl rand -base64 32` |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | The backup timer, through Ansible | The Cloudflare account id and the R2 token from bootstrap step 6 |
+| `OPS_DATABASE_URL` | The backup timer, through Ansible | The full Supabase pooler connection URL of the ops database |
+
+Only the active cloud's credentials are needed. Add the others when you move the host.
+
+| `ACTIVE_CLOUD` | Secrets | Where they come from |
+| --- | --- | --- |
+| `aws` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | An IAM user's access key |
+| `gcp` | `GOOGLE_CREDENTIALS` | A service account JSON key in the project |
+| `contabo` | `CNTB_OAUTH2_CLIENT_ID`, `CNTB_OAUTH2_CLIENT_SECRET`, `CNTB_OAUTH2_USER`, `CNTB_OAUTH2_PASS` | Contabo Customer Control Panel, API |
+| `tencent` | `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY` | Tencent Cloud CAM, API keys |
 
 ## Runbooks
 

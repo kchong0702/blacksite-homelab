@@ -41,12 +41,4 @@ Run these steps once, in order.
 8. Open `https://bytebase.kelvinchong.dev` over the tailnet, finish the setup, and create a service account with the Workspace Admin role. Export `BYTEBASE_URL`, `BYTEBASE_SERVICE_ACCOUNT` and `BYTEBASE_SERVICE_KEY`.
 9. Add the Supabase database as in [add-database](add-database.md), then apply `terraform/environments/prod/bytebase`.
 
-In GitHub, add the same values so the workflows can run. Repository variables hold the non-secret settings.
-
-- `TF_CLOUD_ORGANIZATION`
-- `TAILSCALE_TAILNET`
-- `BYTEBASE_URL`
-- `GCP_PROJECT_ID`
-- `ACTIVE_CLOUD`
-
-Everything else is a repository secret. `.github/workflows/terraform.yml` and `ansible.yml` list the secret names.
+In GitHub, add every variable and secret listed under [GitHub repository settings](../../README.md#github-repository-settings) so the workflows can run.
