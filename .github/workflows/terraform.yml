@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        stack: ${{ fromJSON(format('["global/tailscale","global/cloudflare","prod/{0}","prod/cloudflare","prod/bytebase"]', vars.ACTIVE_CLOUD)) }}
+        stack: ${{ fromJSON(format('["global/tailscale","global/cloudflare","prod/cloudflare","prod/{0}","prod/tailnet-dns","prod/bytebase"]', vars.ACTIVE_CLOUD)) }}
 
     defaults:
       run:
