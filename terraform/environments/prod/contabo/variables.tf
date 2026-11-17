@@ -11,7 +11,7 @@ variable "hosts" {
 }
 
 variable "product_ids" {
-  description = "Contabo product id per size, from `cntb get products`."
+  description = "Contabo product id per size, from the productId table in the createInstance section of Contabo's API docs."
   type        = map(string)
 }
 
