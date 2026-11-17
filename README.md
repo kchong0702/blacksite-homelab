@@ -49,7 +49,7 @@ Secrets never enter git. Terraform reads them from `TF_VAR_*` and provider varia
 | Tailscale provider | `TAILSCALE_OAUTH_CLIENT_ID`, `TAILSCALE_OAUTH_CLIENT_SECRET`, `TAILSCALE_TAILNET` |
 | Cloudflare stacks | `CLOUDFLARE_API_TOKEN`, `TF_VAR_account_id`, `TF_VAR_zone_id` |
 | prod/aws | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
-| prod/gcp | `GOOGLE_CREDENTIALS` |
+| prod/gcp | `GOOGLE_CREDENTIALS`, `TF_VAR_project_id` |
 | prod/contabo | `CNTB_OAUTH2_CLIENT_ID`, `CNTB_OAUTH2_CLIENT_SECRET`, `CNTB_OAUTH2_USER`, `CNTB_OAUTH2_PASS` |
 | prod/tencent | `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY` |
 | prod/bytebase | `BYTEBASE_URL`, `BYTEBASE_SERVICE_ACCOUNT`, `BYTEBASE_SERVICE_KEY`, `TF_VAR_ops_api_db_username`, `TF_VAR_ops_api_db_password` |
@@ -63,6 +63,7 @@ The workflows read the same values from the repository. These are repository var
 - `TF_CLOUD_ORGANIZATION`
 - `TAILSCALE_TAILNET`
 - `BYTEBASE_URL`
+- `GCP_PROJECT_ID`, which feeds `TF_VAR_project_id`
 - `ACTIVE_CLOUD`, one of `aws`, `gcp`, `contabo` or `tencent`
 
 Everything else is a repository secret. Some secrets use a different name from the environment variable they feed. See `.github/workflows/terraform.yml` and `ansible.yml` for the exact names.
