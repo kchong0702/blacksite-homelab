@@ -23,7 +23,7 @@ Infrastructure for one tailnet VM that hosts Bytebase and the renderverse backen
 
 ```
 terraform/modules/        one module per resource group, no provider config
-terraform/environments/   one stack per HCP workspace: global/{tailscale,cloudflare}, prod/{aws,gcp,contabo,tencent,cloudflare,bytebase}
+terraform/environments/   one stack per HCP workspace: global/{tailscale,cloudflare}, prod/{aws,gcp,contabo,tencent,cloudflare,tailnet-dns,bytebase}
 ansible/                  inventories, playbooks/site.yml and one role per concern
 docs/runbooks/            bootstrap, move-host, add-database, restore-bytebase
 ```
@@ -47,7 +47,7 @@ Secrets never enter git. Terraform reads them from `TF_VAR_*` and provider varia
 | --- | --- |
 | Terraform, all stacks | `TF_CLOUD_ORGANIZATION`, `TF_TOKEN_app_terraform_io` |
 | Tailscale provider | `TAILSCALE_OAUTH_CLIENT_ID`, `TAILSCALE_OAUTH_CLIENT_SECRET`, `TAILSCALE_TAILNET` |
-| Cloudflare stacks | `CLOUDFLARE_API_TOKEN`, `TF_VAR_account_id`, `TF_VAR_zone_id` |
+| Cloudflare stacks | `CLOUDFLARE_API_TOKEN`, `TF_VAR_account_id`, `TF_VAR_zone_id`. `prod/tailnet-dns` also needs the Tailscale provider variables |
 | prod/aws | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
 | prod/gcp | `GOOGLE_CREDENTIALS`, `TF_VAR_project_id` |
 | prod/contabo | `CNTB_OAUTH2_CLIENT_ID`, `CNTB_OAUTH2_CLIENT_SECRET`, `CNTB_OAUTH2_USER`, `CNTB_OAUTH2_PASS` |

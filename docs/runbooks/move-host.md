@@ -6,6 +6,6 @@
 4. In the new cloud's `terraform.tfvars` set `hosts = { blacksite = { size = "medium" } }` and apply. cloud-init, or the TencentCloud Automation Tools command on Lighthouse, joins the VM to the tailnet under the same name.
 5. From `ansible/` run `ansible-playbook playbooks/site.yml --user root`.
 6. Restore Bytebase with [restore-bytebase](restore-bytebase.md).
-7. Apply `terraform/environments/prod/cloudflare` again so the `ops` and `bytebase` A records follow the new tailnet IP.
+7. Apply `terraform/environments/prod/tailnet-dns` again so the `ops` and `bytebase` A records follow the new tailnet IP.
 
 If you ever replace the instance in place, add `-replace='tailscale_tailnet_key.host["blacksite"]'` to the plan and apply, because the single-use auth key is already spent.
