@@ -1,4 +1,5 @@
-hosts = {}
+region = "SIN"
+hosts  = {}
 
 product_ids = {
   small  = "REPLACE_WITH_PRODUCT_ID"

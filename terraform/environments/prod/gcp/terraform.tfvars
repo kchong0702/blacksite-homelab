@@ -1,4 +1,4 @@
 project_id = "REPLACE_WITH_GCP_PROJECT_ID"
-region     = "us-central1"
-zone       = "us-central1-a"
+region     = "asia-southeast1"
+zone       = "asia-southeast1-a"
 hosts      = {}
