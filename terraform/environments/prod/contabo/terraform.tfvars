@@ -6,4 +6,4 @@ product_ids = {
   medium = "V153"
 }
 
-image_id = "REPLACE_WITH_UBUNTU_2404_IMAGE_ID"
+image_id = "d64d5c6c-9dda-4e38-8174-0ee282474d8a"

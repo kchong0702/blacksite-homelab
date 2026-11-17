@@ -15,12 +15,7 @@ variable "region" {
   type        = string
 }
 
-variable "bundle_ids" {
-  description = "Lighthouse bundle ID per size, from `tccli lighthouse DescribeBundles`."
-  type        = map(string)
-}
-
 variable "blueprint_id" {
-  description = "Ubuntu 24.04 blueprint ID from `tccli lighthouse DescribeBlueprints`."
+  description = "Ubuntu 24.04 pure-OS blueprint ID from `tccli lighthouse DescribeBlueprints`."
   type        = string
 }

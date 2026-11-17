@@ -4,6 +4,15 @@ module "network" {
   name = "blacksite"
 }
 
+data "tencentcloud_lighthouse_bundle" "linux" {
+  limit = 100
+
+  filters {
+    name   = "support-platform-type"
+    values = ["LINUX_UNIX"]
+  }
+}
+
 resource "tailscale_tailnet_key" "host" {
   for_each = var.hosts
 
@@ -19,7 +28,7 @@ module "compute" {
   source = "../../../modules/tencent/compute"
 
   name                 = each.key
-  bundle_id            = var.bundle_ids[each.value.size]
+  bundle_id            = one([for bundle in data.tencentcloud_lighthouse_bundle.linux.bundle_set : bundle.bundle_id if bundle.cpu == 2 && bundle.memory == 4 && bundle.system_disk_size == 60 && bundle.internet_max_bandwidth_out == 30])
   blueprint_id         = var.blueprint_id
   firewall_template_id = module.network.firewall_template_id
   bootstrap_script     = <<-EOT
