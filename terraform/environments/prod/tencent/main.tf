@@ -1,3 +1,9 @@
+module "network" {
+  source = "../../../modules/tencent/network"
+
+  name = "blacksite"
+}
+
 resource "tailscale_tailnet_key" "host" {
   for_each = var.hosts
 
@@ -12,10 +18,11 @@ module "compute" {
 
   source = "../../../modules/tencent/compute"
 
-  name             = each.key
-  bundle_id        = var.bundle_ids[each.value.size]
-  blueprint_id     = var.blueprint_id
-  bootstrap_script = <<-EOT
+  name                 = each.key
+  bundle_id            = var.bundle_ids[each.value.size]
+  blueprint_id         = var.blueprint_id
+  firewall_template_id = module.network.firewall_template_id
+  bootstrap_script     = <<-EOT
     #!/bin/bash
     set -euo pipefail
     hostnamectl set-hostname ${each.key}

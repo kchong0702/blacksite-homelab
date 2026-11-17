@@ -1,22 +1,13 @@
 resource "tencentcloud_lighthouse_instance" "this" {
-  instance_name = var.name
-  bundle_id     = var.bundle_id
-  blueprint_id  = var.blueprint_id
-  period        = var.period
-  renew_flag    = "NOTIFY_AND_AUTO_RENEW"
+  instance_name        = var.name
+  bundle_id            = var.bundle_id
+  blueprint_id         = var.blueprint_id
+  period               = var.period
+  renew_flag           = "NOTIFY_AND_AUTO_RENEW"
+  firewall_template_id = var.firewall_template_id
 
   lifecycle {
     ignore_changes = [blueprint_id]
-  }
-}
-
-resource "tencentcloud_lighthouse_firewall_rule" "this" {
-  instance_id = tencentcloud_lighthouse_instance.this.id
-
-  firewall_rules {
-    protocol                  = "UDP"
-    port                      = "41641"
-    firewall_rule_description = "Tailscale direct connections"
   }
 }
 

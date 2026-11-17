@@ -13,6 +13,11 @@ variable "blueprint_id" {
   type        = string
 }
 
+variable "firewall_template_id" {
+  description = "Firewall template the instance is created with."
+  type        = string
+}
+
 variable "period" {
   description = "Subscription period in months."
   type        = number
