@@ -1,0 +1,3 @@
+provider "contabo" {}
+
+provider "tailscale" {}
