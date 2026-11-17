@@ -15,7 +15,7 @@ variable "tags" {
 }
 
 variable "harden_public_ip" {
-  description = "Enable ufw and disable SSH password login, for hosts with a public IP and no cloud firewall."
+  description = "Enable ufw and disable SSH password login, for hosts whose public IP is reachable before the cloud firewall attaches."
   type        = bool
   default     = false
 }
