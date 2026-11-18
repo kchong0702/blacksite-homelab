@@ -1,0 +1,90 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths: [terraform/**, ansible/**, .github/workflows/deploy.yml, .github/workflows/reusable-terraform.yml, .github/workflows/reusable-preflight.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  infrastructure:
+    if: vars.ACTIVE_CLOUD != '' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/reusable-terraform.yml
+    with:
+      command: apply
+      stacks: ${{ format('["global/tailscale","global/cloudflare","prod/cloudflare","prod/{0}"]', vars.ACTIVE_CLOUD) }}
+    secrets: inherit
+
+  preflight:
+    needs: infrastructure
+    uses: ./.github/workflows/reusable-preflight.yml
+    secrets: inherit
+
+  configuration:
+    needs: preflight
+    if: needs.preflight.outputs.hosts != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+
+    env:
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_APP_TERRAFORM_IO }}
+      TF_CLOUD_ORGANIZATION: ${{ vars.TF_CLOUD_ORGANIZATION }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install tools
+        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+
+      - name: Read the Cloudflare credentials from Terraform
+        working-directory: terraform/environments/prod/cloudflare
+        run: |
+          terraform init -input=false
+          while read -r name output; do
+            value=$(terraform output -raw "$output")
+            echo "::add-mask::$value"
+            echo "$name=$value" >> "$GITHUB_ENV"
+          done <<'OUTPUTS'
+          CLOUDFLARE_TUNNEL_TOKEN tunnel_token
+          CLOUDFLARE_DNS_API_TOKEN caddy_dns_token
+          R2_ACCESS_KEY_ID backups_access_key_id
+          R2_SECRET_ACCESS_KEY backups_secret_access_key
+          OUTPUTS
+
+      - name: Join the tailnet
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c # v4.4.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:infra-ci
+
+      - name: Install collections
+        working-directory: ansible
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Run the playbook
+        working-directory: ansible
+        run: ansible-playbook playbooks/site.yml --user root
+        env:
+          BYTEBASE_POSTGRES_PASSWORD: ${{ secrets.BYTEBASE_POSTGRES_PASSWORD }}
+          R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
+
+  databases:
+    needs: [preflight, configuration]
+    if: needs.preflight.outputs.hosts != '0' && needs.preflight.outputs.bytebase_ready == 'true'
+    uses: ./.github/workflows/reusable-terraform.yml
+    with:
+      command: apply
+      stacks: '["prod/bytebase"]'
+      tailnet: true
+    secrets: inherit

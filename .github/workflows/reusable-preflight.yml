@@ -1,0 +1,47 @@
+name: Preflight
+
+on:
+  workflow_call:
+    outputs:
+      hosts:
+        description: Number of hosts in the active cloud's stack.
+        value: ${{ jobs.preflight.outputs.hosts }}
+      bytebase_ready:
+        description: Whether the Bytebase service account secret is set.
+        value: ${{ jobs.preflight.outputs.bytebase_ready }}
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    outputs:
+      hosts: ${{ steps.hosts.outputs.count }}
+      bytebase_ready: ${{ steps.bytebase.outputs.ready }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install tools
+        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+
+      - name: Count the hosts in the active cloud
+        id: hosts
+        working-directory: terraform/environments/prod/${{ vars.ACTIVE_CLOUD }}
+        env:
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_APP_TERRAFORM_IO }}
+          TF_CLOUD_ORGANIZATION: ${{ vars.TF_CLOUD_ORGANIZATION }}
+        run: |
+          terraform init -input=false
+          echo "count=$(terraform output -json | jq '.instance_ids.value // {} | length')" >> "$GITHUB_OUTPUT"
+
+      - name: Check for the Bytebase service account
+        id: bytebase
+        env:
+          BYTEBASE_SERVICE_KEY: ${{ secrets.BYTEBASE_SERVICE_KEY }}
+        run: |
+          if [ -n "$BYTEBASE_SERVICE_KEY" ]; then echo "ready=true"; else echo "ready=false"; fi >> "$GITHUB_OUTPUT"
