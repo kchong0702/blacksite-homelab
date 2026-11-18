@@ -10,6 +10,10 @@ data "cloudflare_api_token_permission_groups_list" "dns_write" {
   scope = "com.cloudflare.api.account.zone"
 }
 
+data "cloudflare_api_token_permission_groups_list" "r2_object_write" {
+  name = "Workers%20R2%20Storage%20Bucket%20Item%20Write"
+}
+
 data "cloudflare_api_token_permission_groups_list" "zone_read" {
   name  = "Zone%20Read"
   scope = "com.cloudflare.api.account.zone"
@@ -67,5 +71,15 @@ resource "cloudflare_api_token" "caddy_dns" {
       { id = data.cloudflare_api_token_permission_groups_list.zone_read.result[0].id },
     ]
     resources = jsonencode({ "com.cloudflare.api.account.zone.${var.zone_id}" = "*" })
+  }]
+}
+
+resource "cloudflare_api_token" "backups" {
+  name = "r2-backups"
+
+  policies = [{
+    effect            = "allow"
+    permission_groups = [{ id = data.cloudflare_api_token_permission_groups_list.r2_object_write.result[0].id }]
+    resources         = jsonencode({ "com.cloudflare.edge.r2.bucket.${var.account_id}_default_backups" = "*" })
   }]
 }
