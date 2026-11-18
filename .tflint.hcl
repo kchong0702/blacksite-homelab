@@ -14,3 +14,11 @@ plugin "google" {
   version = "0.41.0"
   source  = "github.com/terraform-linters/tflint-ruleset-google"
 }
+
+rule "terraform_documented_variables" {
+  enabled = true
+}
+
+rule "terraform_documented_outputs" {
+  enabled = true
+}
