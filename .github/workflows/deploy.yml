@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches: [main]
-    paths: [terraform/**, ansible/**, .github/workflows/deploy.yml, .github/workflows/reusable-terraform.yml, .github/workflows/reusable-gates.yml]
+    paths: [terraform/**, ansible/**, .github/workflows/deploy.yml, .github/workflows/reusable-terraform.yml, .github/workflows/reusable-preflight.yml]
   workflow_dispatch:
 
 permissions:
@@ -22,14 +22,14 @@ jobs:
       stacks: ${{ format('["global/tailscale","global/cloudflare","prod/cloudflare","prod/{0}"]', vars.ACTIVE_CLOUD) }}
     secrets: inherit
 
-  gates:
+  preflight:
     needs: infrastructure
-    uses: ./.github/workflows/reusable-gates.yml
+    uses: ./.github/workflows/reusable-preflight.yml
     secrets: inherit
 
   configuration:
-    needs: gates
-    if: needs.gates.outputs.hosts != '0'
+    needs: preflight
+    if: needs.preflight.outputs.hosts != '0'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
@@ -80,8 +80,8 @@ jobs:
           OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
 
   databases:
-    needs: [gates, configuration]
-    if: needs.gates.outputs.hosts != '0' && needs.gates.outputs.bytebase == 'true'
+    needs: [preflight, configuration]
+    if: needs.preflight.outputs.hosts != '0' && needs.preflight.outputs.bytebase_ready == 'true'
     uses: ./.github/workflows/reusable-terraform.yml
     with:
       command: apply

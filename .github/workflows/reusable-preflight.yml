@@ -1,26 +1,26 @@
-name: Gates
+name: Preflight
 
 on:
   workflow_call:
     outputs:
       hosts:
         description: Number of hosts in the active cloud's stack.
-        value: ${{ jobs.gates.outputs.hosts }}
-      bytebase:
+        value: ${{ jobs.preflight.outputs.hosts }}
+      bytebase_ready:
         description: Whether the Bytebase service account secret is set.
-        value: ${{ jobs.gates.outputs.bytebase }}
+        value: ${{ jobs.preflight.outputs.bytebase_ready }}
 
 permissions:
   contents: read
 
 jobs:
-  gates:
+  preflight:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     outputs:
       hosts: ${{ steps.hosts.outputs.count }}
-      bytebase: ${{ steps.bytebase.outputs.ready }}
+      bytebase_ready: ${{ steps.bytebase.outputs.ready }}
 
     steps:
       - name: Checkout code
