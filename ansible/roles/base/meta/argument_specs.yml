@@ -1,0 +1,9 @@
+argument_specs:
+  main:
+    short_description: Install base packages and allow inbound traffic only on tailscale0.
+    options:
+      base_packages:
+        type: list
+        elements: str
+        default: [curl, ca-certificates, unattended-upgrades, ufw]
+        description: Apt packages to install.

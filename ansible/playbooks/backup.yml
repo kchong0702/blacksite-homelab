@@ -1,0 +1,9 @@
+- name: Back up the databases now
+  hosts: backup_servers
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Run the backup service and wait for it to finish
+      ansible.builtin.systemd:
+        name: pg-backup.service
+        state: started

@@ -1,0 +1,53 @@
+argument_specs:
+  main:
+    short_description: Dump Postgres databases to Cloudflare R2 every day with a systemd timer.
+    options:
+      pg_backup_bucket:
+        type: str
+        required: true
+        description: R2 bucket the dumps are synced to, under a timestamped prefix.
+      pg_backup_databases:
+        type: list
+        elements: dict
+        default: []
+        description: Databases to dump. Each entry sets either container and user, or url_env.
+        options:
+          name:
+            type: str
+            required: true
+            description: Database name, also used in the dump file name.
+          container:
+            type: str
+            description: Local Postgres container to run pg_dump in with docker exec.
+          user:
+            type: str
+            description: Postgres user for the container dump.
+          url_env:
+            type: str
+            description: Environment variable that holds the connection URL, read on the controller and written to the env file.
+        mutually_exclusive:
+          - [container, url_env]
+        required_one_of:
+          - [container, url_env]
+        required_together:
+          - [container, user]
+      pg_backup_aws_cli_image:
+        type: str
+        default: amazon/aws-cli:2.40.1
+        description: Image that runs aws s3 sync against R2.
+      pg_backup_postgres_image:
+        type: str
+        default: postgres:17-alpine
+        description: Image that runs pg_dump for url_env databases.
+      pg_backup_env_file:
+        type: path
+        default: /etc/pg-backup.env
+        description: Root-only env file with the R2 credentials and database URLs.
+      pg_backup_script:
+        type: path
+        default: /usr/local/bin/pg-backup
+        description: Path of the backup script the service runs.
+      pg_backup_env:
+        type: dict
+        no_log: true
+        description: R2 account ID and access keys. Read from R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY.

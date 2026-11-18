@@ -1,0 +1,9 @@
+argument_specs:
+  main:
+    short_description: Install Docker and the compose plugin from Ubuntu's archive.
+    options:
+      docker_packages:
+        type: list
+        elements: str
+        default: [docker.io, docker-compose-v2]
+        description: Apt packages that provide Docker and compose.

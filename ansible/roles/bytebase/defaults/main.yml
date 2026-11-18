@@ -1,0 +1,3 @@
+bytebase_version: 3.24.1
+bytebase_dir: /opt/bytebase
+bytebase_postgres_password: "{{ lookup('ansible.builtin.env', 'BYTEBASE_POSTGRES_PASSWORD', default=undef()) }}"

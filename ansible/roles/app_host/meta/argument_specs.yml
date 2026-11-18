@@ -1,0 +1,12 @@
+argument_specs:
+  main:
+    short_description: Create the deploy user and the directory the app CI deploys into.
+    options:
+      app_host_user:
+        type: str
+        default: deploy
+        description: User the app CI logs in as. It joins the docker group.
+      app_host_dir:
+        type: path
+        default: /srv/renderverse
+        description: Directory owned by the deploy user that holds the app compose project.

@@ -1,0 +1,1 @@
+bytebase_external_url: "https://{{ bytebase_subdomain }}.{{ domain }}"
