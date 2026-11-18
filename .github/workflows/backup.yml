@@ -1,0 +1,32 @@
+name: Backup
+
+on:
+  workflow_dispatch:
+
+concurrency: ansible
+
+jobs:
+  backup:
+    if: vars.ACTIVE_CLOUD != ''
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ansible
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+
+      - name: Install tools
+        uses: jdx/mise-action@v5.2.7
+
+      - name: Join the tailnet
+        uses: tailscale/github-action@v4.4.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:infra-ci
+
+      - name: Run the backup
+        run: ansible-playbook playbooks/backup.yml --user root
