@@ -1,6 +1,6 @@
 # Move the host to another cloud
 
-1. Confirm a recent backup exists in the `backups` R2 bucket. If not, run `systemctl start pg-backup` on the host and check the bucket.
+1. Run the Backup workflow from the repository's Actions tab and wait for it to pass. It runs `playbooks/backup.yml`, which fails if any dump or the upload to the `backups` R2 bucket fails. Without GitHub, run `ansible-playbook playbooks/backup.yml --user root` from `ansible/`.
 2. On the old host stop the compose stacks for caddy, cloudflared, bytebase and the renderverse app. Run `tailscale logout`, then delete the old `blacksite` device in the Tailscale admin console. This is mandatory for Contabo, because destroy only cancels the contract and the VPS keeps running until the term ends. Two cloudflared connectors on one tunnel would split ezbot traffic.
 3. In the old cloud's `terraform.tfvars` set `hosts = {}` and apply. This destroys the VM and everything on its disk, so the backup in step 1 must exist.
 4. In the new cloud's `terraform.tfvars` set `hosts = { blacksite = { size = "medium" } }` and apply. cloud-init, or the TencentCloud Automation Tools command on Lighthouse, joins the VM to the tailnet under the same name.

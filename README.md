@@ -64,7 +64,7 @@ The workflows read every value below from the repository's Settings > Secrets an
 
 | Name | Value | Where it comes from |
 | --- | --- | --- |
-| `ACTIVE_CLOUD` | `aws`, `gcp`, `contabo` or `tencent` | The cloud the host runs on. Both workflows skip until it is set |
+| `ACTIVE_CLOUD` | `aws`, `gcp`, `contabo` or `tencent` | The cloud the host runs on. The Terraform, Ansible and Backup workflows skip until it is set |
 | `TF_CLOUD_ORGANIZATION` | HCP Terraform organization name | Bootstrap step 1 |
 | `TAILSCALE_TAILNET` | Tailnet name | Tailscale admin console, Settings > General |
 | `BYTEBASE_URL` | `https://bytebase.kelvinchong.dev` | Fixed |
