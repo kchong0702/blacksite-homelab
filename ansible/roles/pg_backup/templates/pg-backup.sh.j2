@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+{{ ansible_managed | comment }}
 set -euo pipefail
 
 set -a
@@ -9,9 +10,12 @@ stamp=$(date -u +%Y%m%dT%H%M%SZ)
 dir=$(mktemp -d)
 trap 'rm -rf "$dir"' EXIT
 
-docker exec bytebase-postgres pg_dump -U bytebase bytebase | gzip > "$dir/bytebase-$stamp.sql.gz"
 {% for db in pg_backup_databases %}
+{% if db.container is defined %}
+docker exec {{ db.container }} pg_dump -U {{ db.user }} {{ db.name }} | gzip > "$dir/{{ db.name }}-$stamp.sql.gz"
+{% else %}
 docker run --rm -e {{ db.url_env }} {{ pg_backup_postgres_image }} sh -c 'pg_dump "${{ db.url_env }}"' | gzip > "$dir/{{ db.name }}-$stamp.sql.gz"
+{% endif %}
 {% endfor %}
 
 docker run --rm \
@@ -21,5 +25,5 @@ docker run --rm \
   -e AWS_RESPONSE_CHECKSUM_VALIDATION=when_required \
   -v "$dir":/backup:ro \
   {{ pg_backup_aws_cli_image }} \
-  s3 sync /backup "s3://{{ backup_bucket }}/$stamp/" \
+  s3 sync /backup "s3://{{ pg_backup_bucket }}/$stamp/" \
   --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"

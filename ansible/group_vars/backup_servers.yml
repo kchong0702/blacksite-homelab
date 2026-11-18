@@ -1,0 +1,7 @@
+pg_backup_bucket: backups
+pg_backup_databases:
+  - name: bytebase
+    container: bytebase-postgres
+    user: bytebase
+  - name: ops
+    url_env: OPS_DATABASE_URL

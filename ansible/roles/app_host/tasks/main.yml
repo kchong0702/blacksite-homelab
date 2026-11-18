@@ -1,14 +1,14 @@
 - name: Create the deploy user
   ansible.builtin.user:
-    name: "{{ deploy_user }}"
+    name: "{{ app_host_user }}"
     groups: docker
     append: true
     shell: /bin/bash
 
 - name: Create the app directory
   ansible.builtin.file:
-    path: "{{ app_dir }}"
+    path: "{{ app_host_dir }}"
     state: directory
-    owner: "{{ deploy_user }}"
-    group: "{{ deploy_user }}"
+    owner: "{{ app_host_user }}"
+    group: "{{ app_host_user }}"
     mode: "0755"

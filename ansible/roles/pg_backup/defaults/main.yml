@@ -6,3 +6,4 @@ pg_backup_env:
   R2_ACCOUNT_ID: "{{ lookup('ansible.builtin.env', 'R2_ACCOUNT_ID', default=undef()) }}"
   AWS_ACCESS_KEY_ID: "{{ lookup('ansible.builtin.env', 'R2_ACCESS_KEY_ID', default=undef()) }}"
   AWS_SECRET_ACCESS_KEY: "{{ lookup('ansible.builtin.env', 'R2_SECRET_ACCESS_KEY', default=undef()) }}"
+pg_backup_databases: []

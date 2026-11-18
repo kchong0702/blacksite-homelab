@@ -6,7 +6,7 @@
 
 - name: Read Tailscale state
   ansible.builtin.command: tailscale status --json
-  register: tailscale_status
+  register: __tailscale_status
   changed_when: false
   failed_when: false
 
@@ -16,7 +16,7 @@
     --auth-key={{ tailscale_auth_key }}
     --hostname={{ tailscale_hostname }}
     --advertise-tags={{ tailscale_tags }}
-  when: (tailscale_status.stdout | default('{}', true) | from_json).BackendState | default('') != 'Running'
+  when: (__tailscale_status.stdout | default('{}', true) | from_json).BackendState | default('') != 'Running'
   changed_when: true
   no_log: true
 

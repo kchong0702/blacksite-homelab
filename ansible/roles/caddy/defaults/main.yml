@@ -1,3 +1,4 @@
+caddy_sites: []
 caddy_version: 2.11.9
 caddy_dir: /opt/caddy
 caddy_image: "caddy-cloudflare:{{ caddy_version }}"
