@@ -1,0 +1,136 @@
+name: Terraform
+
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: plan or apply.
+        type: string
+        required: true
+      stacks:
+        description: JSON array of directories under terraform/environments. Applies run them in this order.
+        type: string
+        required: true
+      tailnet:
+        description: Join the tailnet first, for stacks whose API is only reachable there.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_APP_TERRAFORM_IO }}
+  TF_CLOUD_ORGANIZATION: ${{ vars.TF_CLOUD_ORGANIZATION }}
+  TF_VAR_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  TF_VAR_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  TAILSCALE_OAUTH_CLIENT_ID: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+  TAILSCALE_OAUTH_CLIENT_SECRET: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
+  TAILSCALE_TAILNET: ${{ vars.TAILSCALE_TAILNET }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+  TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
+  CNTB_OAUTH2_CLIENT_ID: ${{ secrets.CNTB_OAUTH2_CLIENT_ID }}
+  CNTB_OAUTH2_CLIENT_SECRET: ${{ secrets.CNTB_OAUTH2_CLIENT_SECRET }}
+  CNTB_OAUTH2_USER: ${{ secrets.CNTB_OAUTH2_USER }}
+  CNTB_OAUTH2_PASS: ${{ secrets.CNTB_OAUTH2_PASS }}
+  TENCENTCLOUD_SECRET_ID: ${{ secrets.TENCENTCLOUD_SECRET_ID }}
+  TENCENTCLOUD_SECRET_KEY: ${{ secrets.TENCENTCLOUD_SECRET_KEY }}
+  BYTEBASE_URL: ${{ vars.BYTEBASE_URL }}
+  BYTEBASE_SERVICE_ACCOUNT: ${{ secrets.BYTEBASE_SERVICE_ACCOUNT }}
+  BYTEBASE_SERVICE_KEY: ${{ secrets.BYTEBASE_SERVICE_KEY }}
+  TF_VAR_ops_api_db_username: ${{ secrets.OPS_API_DB_USERNAME }}
+  TF_VAR_ops_api_db_password: ${{ secrets.OPS_API_DB_PASSWORD }}
+
+jobs:
+  plan:
+    if: inputs.command == 'plan'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJSON(inputs.stacks) }}
+
+    defaults:
+      run:
+        working-directory: terraform/environments/${{ matrix.stack }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install tools
+        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+
+      - name: Join the tailnet
+        if: inputs.tailnet
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c # v4.4.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:infra-ci
+
+      - name: Mask the GCP project id
+        if: env.TF_VAR_project_id != ''
+        run: echo "::add-mask::$TF_VAR_project_id"
+
+      - name: Init
+        run: terraform init -input=false
+
+      - name: Plan
+        run: terraform plan -input=false -lock-timeout=10m -no-color -out=tfplan
+
+      - name: Add the plan to the run summary
+        env:
+          STACK: ${{ matrix.stack }}
+        run: |
+          {
+            echo "### $STACK"
+            echo '```'
+            terraform show -no-color tfplan
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  apply:
+    if: inputs.command == 'apply'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+
+    strategy:
+      max-parallel: 1
+      matrix:
+        stack: ${{ fromJSON(inputs.stacks) }}
+
+    defaults:
+      run:
+        working-directory: terraform/environments/${{ matrix.stack }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install tools
+        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+
+      - name: Join the tailnet
+        if: inputs.tailnet
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c # v4.4.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:infra-ci
+
+      - name: Mask the GCP project id
+        if: env.TF_VAR_project_id != ''
+        run: echo "::add-mask::$TF_VAR_project_id"
+
+      - name: Init
+        run: terraform init -input=false
+
+      - name: Apply
+        run: terraform apply -input=false -lock-timeout=10m -auto-approve
