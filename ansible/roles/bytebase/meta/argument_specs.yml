@@ -1,0 +1,20 @@
+argument_specs:
+  main:
+    short_description: Run Bytebase and its metadata Postgres on 127.0.0.1:8080.
+    options:
+      bytebase_version:
+        type: str
+        default: 3.24.1
+        description: bytebase/bytebase image tag.
+      bytebase_external_url:
+        type: str
+        required: true
+        description: URL users open Bytebase at, passed as --external-url.
+      bytebase_dir:
+        type: path
+        default: /opt/bytebase
+        description: Directory for the compose file and env file.
+      bytebase_postgres_password:
+        type: str
+        no_log: true
+        description: Password of the metadata Postgres. Read from BYTEBASE_POSTGRES_PASSWORD.

@@ -1,0 +1,16 @@
+argument_specs:
+  main:
+    short_description: Run the Cloudflare Tunnel connector on the host network.
+    options:
+      cloudflared_version:
+        type: str
+        default: 2026.10.7
+        description: cloudflared image tag.
+      cloudflared_dir:
+        type: path
+        default: /opt/cloudflared
+        description: Directory for the compose file and env file.
+      cloudflared_tunnel_token:
+        type: str
+        no_log: true
+        description: Tunnel token. Read from CLOUDFLARE_TUNNEL_TOKEN.

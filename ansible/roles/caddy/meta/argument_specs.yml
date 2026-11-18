@@ -1,0 +1,33 @@
+argument_specs:
+  main:
+    short_description: Run Caddy on the tailnet IP with DNS-01 certificates from Cloudflare.
+    options:
+      caddy_sites:
+        type: list
+        elements: dict
+        default: []
+        description: Sites Caddy serves, each bound to the host's tailscale0 address.
+        options:
+          host:
+            type: str
+            required: true
+            description: Fully qualified hostname of the site.
+          upstream:
+            type: str
+            required: true
+            description: Address Caddy proxies to, such as 127.0.0.1:8080.
+      caddy_version:
+        type: str
+        default: 2.11.9
+        description: Caddy version tag for the built image.
+      caddy_dir:
+        type: path
+        default: /opt/caddy
+        description: Directory for the Dockerfile, Caddyfile, compose file and env file.
+      caddy_image:
+        type: str
+        description: Name of the locally built image. Defaults to caddy-cloudflare tagged with caddy_version.
+      caddy_dns_api_token:
+        type: str
+        no_log: true
+        description: Cloudflare API token with DNS edit rights. Read from CLOUDFLARE_DNS_API_TOKEN.

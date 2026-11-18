@@ -1,0 +1,15 @@
+argument_specs:
+  main:
+    short_description: Install Tailscale, join the tailnet and turn on Tailscale SSH.
+    options:
+      tailscale_hostname:
+        type: str
+        description: Name of the host on the tailnet. Defaults to the inventory hostname.
+      tailscale_tags:
+        type: str
+        default: tag:server
+        description: Comma-separated ACL tags the host advertises.
+      tailscale_auth_key:
+        type: str
+        no_log: true
+        description: Auth key, read from TAILSCALE_AUTH_KEY and empty when unset. Needed only when the host is not on the tailnet yet.

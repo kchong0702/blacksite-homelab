@@ -10,12 +10,14 @@
     src: pg-backup.sh.j2
     dest: "{{ pg_backup_script }}"
     mode: "0755"
+    backup: true
 
 - name: Install the backup service
   ansible.builtin.template:
     src: pg-backup.service.j2
     dest: /etc/systemd/system/pg-backup.service
     mode: "0644"
+    backup: true
   notify: Reload systemd
 
 - name: Install the backup timer
@@ -23,6 +25,7 @@
     src: pg-backup.timer.j2
     dest: /etc/systemd/system/pg-backup.timer
     mode: "0644"
+    backup: true
   notify: Reload systemd
 
 - name: Flush handlers so systemd sees the units

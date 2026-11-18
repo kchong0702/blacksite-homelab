@@ -17,6 +17,7 @@
     src: compose.yaml.j2
     dest: "{{ cloudflared_dir }}/compose.yaml"
     mode: "0644"
+    backup: true
 
 - name: Start cloudflared
   community.docker.docker_compose_v2:

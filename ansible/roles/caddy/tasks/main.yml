@@ -36,6 +36,7 @@
     src: Caddyfile.j2
     dest: "{{ caddy_dir }}/Caddyfile"
     mode: "0644"
+    backup: true
   notify: Restart Caddy
 
 - name: Render the compose file
@@ -43,6 +44,7 @@
     src: compose.yaml.j2
     dest: "{{ caddy_dir }}/compose.yaml"
     mode: "0644"
+    backup: true
 
 - name: Start Caddy
   community.docker.docker_compose_v2:
