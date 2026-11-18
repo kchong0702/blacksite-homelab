@@ -64,3 +64,7 @@ resource "tailscale_dns_configuration" "this" {
     }
   }
 }
+
+resource "tailscale_tailnet_settings" "this" {
+  devices_approval_on = true
+}
