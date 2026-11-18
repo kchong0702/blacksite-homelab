@@ -3,7 +3,7 @@ name: Backup
 on:
   workflow_dispatch:
 
-concurrency: ansible
+concurrency: deploy-main
 
 jobs:
   backup:
