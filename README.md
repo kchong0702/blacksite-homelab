@@ -24,7 +24,7 @@ Infrastructure for one tailnet VM that hosts Bytebase and the renderverse backen
 ```
 terraform/modules/        one module per resource group, no provider config
 terraform/environments/   one stack per HCP workspace: global/{tailscale,cloudflare}, prod/{aws,gcp,contabo,tencent,cloudflare,tailnet-dns,bytebase}
-ansible/                  hosts.yml, group_vars/ per host group, playbooks/site.yml with one play per group, one role per concern
+ansible/                  hosts.yml, group_vars/<group>/<role>.yml, playbooks/site.yml with one play per group, one role per concern
 docs/runbooks/            bootstrap, move-host, add-database, restore-bytebase
 ```
 
