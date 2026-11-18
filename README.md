@@ -32,18 +32,16 @@ Only one of `prod/aws`, `prod/gcp`, `prod/contabo` and `prod/tencent` holds a ho
 
 ## How changes reach production
 
-Every apply runs in the Deploy workflow. Open a pull request, read the plan in its checks, and merge. Never run `terraform apply` or `ansible-playbook` against production from a laptop, because the next Deploy run applies `main` and reverts anything that isn't on it. State commands such as `terraform import` are the exception, and the bootstrap runbook says when to use them.
+Every apply runs in GitHub Actions. Open a pull request, read the plan in its checks, and merge. Never run `terraform apply` or `ansible-playbook` against production from a laptop, because the next Deploy run applies `main` and reverts anything that isn't on it. State commands such as `terraform import` are the exception, and the bootstrap runbook says when to use them.
 
-Deploy runs four jobs in order:
-
-| Job | Pull request | Merge to `main` or manual run |
+| Workflow | Runs on | What it does |
 | --- | --- | --- |
-| `infrastructure` | `terraform plan` for `global/tailscale`, `global/cloudflare`, `prod/cloudflare` and `prod/<ACTIVE_CLOUD>` | `terraform apply` for the same stacks, one at a time, stopping at the first failure |
-| `gates` | Counts the hosts in the active cloud and checks for the Bytebase service account | Same |
-| `configuration` | Skipped | Runs `site.yml` over Tailscale SSH. Reads the tunnel token, Caddy DNS token and R2 backup keys from `prod/cloudflare`'s outputs. Skipped while the active cloud has no host |
-| `databases` | `terraform plan` for `prod/bytebase`, with the same skips as on `main` | `terraform apply` for `prod/bytebase`. Skipped while there is no host or no `BYTEBASE_SERVICE_KEY` |
+| Plan | Pull requests that touch `terraform/` | `terraform plan` for `global/tailscale`, `global/cloudflare`, `prod/cloudflare` and `prod/<ACTIVE_CLOUD>`, and for `prod/bytebase` once there is a host and a Bytebase service account. Each plan goes to the run summary. Skips pull requests from forks |
+| Deploy | Merges to `main` that touch `terraform/` or `ansible/`, and manual runs | Applies the four stacks one at a time and stops at the first failure. Then runs `site.yml` over Tailscale SSH with the tunnel token, Caddy DNS token and R2 backup keys read from `prod/cloudflare`'s outputs, then applies `prod/bytebase`. The Ansible and Bytebase steps skip while the active cloud has no host, and the Bytebase step also skips until `BYTEBASE_SERVICE_KEY` is set |
+| Backup | Manual runs | Runs `playbooks/backup.yml` and fails if a dump or the upload fails |
+| Pre-commit, Commit Policy | Every pull request and push | Lint, formatting and commit message checks |
 
-The Backup workflow runs `playbooks/backup.yml` on demand and never overlaps a Deploy run on `main`.
+Plan and Deploy share `_terraform.yml`, which holds the stack credentials and the plan and apply jobs, and `_gates.yml`, which counts hosts and checks for the Bytebase service account. Deploy and Backup run in the `production` environment, only from `main`, and never at the same time. Every action is pinned to a commit hash, and Dependabot opens a weekly pull request for action and Terraform provider updates.
 
 ## Setup
 

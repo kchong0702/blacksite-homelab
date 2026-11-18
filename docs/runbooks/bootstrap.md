@@ -30,7 +30,11 @@ Run these steps once, in order. Save every value as the secret or variable named
    Find each record id with `GET /zones/<zone_id>/dns_records?name=<hostname>` or in the dashboard URL of the record.
 4. Pick the cloud. Save its credentials from the table in the README, then set `ACTIVE_CLOUD` to `aws`, `gcp`, `contabo` or `tencent`. For GCP, first create a project, enable the Compute Engine API and save the project id as `GCP_PROJECT_ID`. The repo is public, so the id stays out of `terraform.tfvars`. Contabo and Tencent need no lookups. Contabo uses Cloud VPS 4 (`V153`) and the standard `ubuntu-24.04` image. Tencent uses the Ubuntu 24.04 blueprint and picks the 2 vCPU, 4 GB Starter bundle by its specs.
 5. Save `BYTEBASE_POSTGRES_PASSWORD`, generated with `openssl rand -base64 32`, and `OPS_DATABASE_URL`, the Supabase session pooler URL of the ops database.
-6. In the repository's Actions tab, run the Deploy workflow. It applies the tailnet policy, device approval, the Cloudflare zone settings, R2, the tunnel, Pages and the Caddy and backup tokens. There is no host yet, so `configuration` and `databases` skip.
+6. Protect production in the repository settings.
+   - Under Environments, create `production` and limit its deployment branches to `main`.
+   - Under Branches, add a rule for `main` that requires a pull request, requires the `pre-commit` and `commits` checks to pass, and requires the branch to be up to date before merging. Plan only runs when `terraform/` changes, so it can't be a required check, but the up-to-date rule makes it plan again against the latest `main`. Read that plan before merging, and Deploy applies the same change.
+
+   Then run the Deploy workflow from the Actions tab. It applies the tailnet policy, device approval, the Cloudflare zone settings, R2, the tunnel, Pages and the Caddy and backup tokens. There is no host yet, so `configuration` and `databases` skip.
 
    Device approval is now on. A device you log in to the tailnet yourself waits until an admin approves it under Machines. Hosts and CI join with pre-approved keys and skip this.
 7. Step 6 created `tag:server`, `tag:infra-ci` and `tag:deploy`, so create the long-lived Tailscale OAuth clients.
