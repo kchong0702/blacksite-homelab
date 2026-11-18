@@ -41,7 +41,7 @@ Every apply runs in GitHub Actions. Open a pull request, read the plan in its ch
 | Backup | Manual runs | Runs `playbooks/backup.yml` and fails if a dump or the upload fails |
 | Pre-commit, Commit Policy | Every pull request and push | Lint, formatting and commit message checks |
 
-Plan and Deploy share `reusable-terraform.yml`, which holds the stack credentials and the plan and apply jobs, and `reusable-gates.yml`, which counts hosts and checks for the Bytebase service account. Deploy and Backup run in the `production` environment, only from `main`, and never at the same time. Every action is pinned to a commit hash, and Dependabot opens a weekly pull request for action and Terraform provider updates.
+Plan and Deploy share `reusable-terraform.yml`, which holds the stack credentials and the plan and apply jobs, and `reusable-preflight.yml`, which counts hosts and checks for the Bytebase service account. Deploy and Backup run in the `production` environment, only from `main`, and never at the same time. Every action is pinned to a commit hash, and Dependabot opens a weekly pull request for action and Terraform provider updates.
 
 ## Setup
 
