@@ -112,11 +112,16 @@ jobs:
         working-directory: terraform/environments/prod/cloudflare
         run: |
           terraform init -input=false
-          for pair in CLOUDFLARE_TUNNEL_TOKEN=tunnel_token CLOUDFLARE_DNS_API_TOKEN=caddy_dns_token R2_ACCESS_KEY_ID=backups_access_key_id R2_SECRET_ACCESS_KEY=backups_secret_access_key; do
-            value=$(terraform output -raw "${pair#*=}")
+          while read -r name output; do
+            value=$(terraform output -raw "$output")
             echo "::add-mask::$value"
-            echo "${pair%%=*}=$value" >> "$GITHUB_ENV"
-          done
+            echo "$name=$value" >> "$GITHUB_ENV"
+          done <<'EOF'
+          CLOUDFLARE_TUNNEL_TOKEN tunnel_token
+          CLOUDFLARE_DNS_API_TOKEN caddy_dns_token
+          R2_ACCESS_KEY_ID backups_access_key_id
+          R2_SECRET_ACCESS_KEY backups_secret_access_key
+          EOF
 
       - name: Join the tailnet
         uses: tailscale/github-action@v4.4.0
