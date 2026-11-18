@@ -29,3 +29,15 @@ module "compute" {
   region     = var.region
   user_data  = module.cloud_init[each.key].rendered
 }
+
+module "dns" {
+  for_each = var.hosts
+
+  source = "../../../modules/cloudflare/dns"
+
+  tailnet_host = each.key
+  zone_id      = var.zone_id
+  records      = [for subdomain in each.value.subdomains : "${subdomain}.${var.domain}"]
+
+  depends_on = [module.compute]
+}

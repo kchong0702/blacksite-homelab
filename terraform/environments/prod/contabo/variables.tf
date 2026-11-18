@@ -1,7 +1,8 @@
 variable "hosts" {
-  description = "VMs to run in this cloud, by tailnet hostname."
+  description = "VMs to run in this cloud, by tailnet hostname, with the subdomains that point at each one."
   type = map(object({
-    size = string
+    size       = string
+    subdomains = list(string)
   }))
 
   validation {
@@ -24,4 +25,15 @@ variable "region" {
   description = "Contabo region for the VMs."
   type        = string
   default     = "EU"
+}
+
+variable "domain" {
+  description = "Apex domain the host subdomains sit under."
+  type        = string
+  default     = "kelvinchong.dev"
+}
+
+variable "zone_id" {
+  description = "ID of the Cloudflare zone for domain."
+  type        = string
 }

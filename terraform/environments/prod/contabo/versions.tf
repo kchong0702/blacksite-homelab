@@ -12,6 +12,10 @@ terraform {
       source  = "contabo/contabo"
       version = "0.1.44"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "5.29.0"
+    }
     tailscale = {
       source  = "tailscale/tailscale"
       version = "0.29.3"

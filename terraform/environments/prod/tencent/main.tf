@@ -39,3 +39,15 @@ module "compute" {
     tailscale up --auth-key=${tailscale_tailnet_key.host[each.key].key} --hostname=${each.key} --advertise-tags=tag:server --ssh --accept-dns=false
   EOT
 }
+
+module "dns" {
+  for_each = var.hosts
+
+  source = "../../../modules/cloudflare/dns"
+
+  tailnet_host = each.key
+  zone_id      = var.zone_id
+  records      = [for subdomain in each.value.subdomains : "${subdomain}.${var.domain}"]
+
+  depends_on = [module.compute]
+}
