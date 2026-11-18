@@ -1,11 +1,11 @@
 # Move the host to another cloud
 
-1. Run the Backup workflow from the repository's Actions tab and wait for it to pass. It runs `playbooks/backup.yml`, which fails if any dump or the upload to the `backups` R2 bucket fails. Without GitHub, run `ansible-playbook playbooks/backup.yml --user root` from `ansible/`.
-2. On the old host stop the compose stacks for caddy, cloudflared, bytebase and the renderverse app. Run `tailscale logout`, then delete the old `blacksite` device in the Tailscale admin console. This is mandatory for Contabo, because destroy only cancels the contract and the VPS keeps running until the term ends. Two cloudflared connectors on one tunnel would split ezbot traffic.
-3. In the old cloud's `terraform.tfvars` set `hosts = {}` and apply. This destroys the VM and everything on its disk, so the backup in step 1 must exist.
-4. In the new cloud's `terraform.tfvars` set `hosts = { blacksite = { size = "medium" } }` and apply. cloud-init, or the TencentCloud Automation Tools command on Lighthouse, joins the VM to the tailnet under the same name.
-5. From `ansible/` run `ansible-playbook playbooks/site.yml --user root`.
-6. Restore Bytebase with [restore-bytebase](restore-bytebase.md).
-7. Apply `terraform/environments/prod/tailnet-dns` again so the `ops` and `bytebase` A records follow the new tailnet IP.
+1. Run the Backup workflow from the Actions tab and wait for it to pass. It fails if any dump or the upload to the `backups` R2 bucket fails.
+2. SSH in to the old host and stop the compose stacks for caddy, cloudflared, bytebase and the renderverse app. Run `tailscale logout`, then delete the old `blacksite` device in the Tailscale admin console. The new VM can only take the `blacksite` name once the old device is gone, and two cloudflared connectors on one tunnel would split ezbot traffic. On Contabo this also matters because destroy only cancels the contract, and the VPS keeps running until the term ends.
+3. Open a pull request that sets `hosts = {}` in the old cloud's `terraform.tfvars` and merge it. Deploy destroys the VM, everything on its disk, and its `ops` and `bytebase` records, so the backup from step 1 must exist.
+4. Save the new cloud's credentials from the table in the README and set `ACTIVE_CLOUD` to the new cloud.
+5. Open a pull request that sets `hosts = { blacksite = { size = "medium", subdomains = ["ops", "bytebase"] } }` in the new cloud's `terraform.tfvars` and merge it. Deploy creates the VM, points the records at its tailnet IP and runs `site.yml`. The `databases` job of this run fails, because the new Bytebase is empty and doesn't know the service account yet.
+6. Restore Bytebase with [restore-bytebase](restore-bytebase.md). The dump brings back the admin, the service account and the registered databases.
+7. Run the Deploy workflow from the Actions tab. `databases` now passes.
 
-If you ever replace the instance in place, add `-replace='tailscale_tailnet_key.host["blacksite"]'` to the plan and apply, because the single-use auth key is already spent.
+To rebuild the VM in the same cloud, follow the same steps without changing `ACTIVE_CLOUD`. Setting `hosts = {}` and then setting it back gives the new VM a fresh single-use tailnet key.

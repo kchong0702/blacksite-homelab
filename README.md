@@ -15,7 +15,7 @@ Infrastructure for one tailnet VM that hosts Bytebase and the renderverse backen
 
 | Tool | Owns |
 | --- | --- |
-| Terraform | Anything behind an API: the VM, the cloud network, Tailscale policy and DNS, Cloudflare Pages, R2, tunnel, DNS and zone settings, Bytebase instances |
+| Terraform | Anything behind an API: the VM and its tailnet DNS records, the cloud network, Tailscale policy and DNS, Cloudflare Pages, R2 and the backup token, tunnel, DNS and zone settings, Bytebase instances |
 | Ansible | Anything on the VM's disk: packages, firewall, Tailscale join, Docker, Caddy, cloudflared, Bytebase, the backup timer |
 | renderverse CI | The app containers in `/srv/renderverse`. It joins the tailnet as `tag:deploy` and logs in as `deploy`. This repo never runs the app compose |
 
@@ -23,12 +23,27 @@ Infrastructure for one tailnet VM that hosts Bytebase and the renderverse backen
 
 ```
 terraform/modules/        one module per resource group, no provider config
-terraform/environments/   one stack per HCP workspace: global/{tailscale,cloudflare}, prod/{aws,gcp,contabo,tencent,cloudflare,tailnet-dns,bytebase}
+terraform/environments/   one stack per HCP workspace: global/{tailscale,cloudflare}, prod/{cloudflare,aws,gcp,contabo,tencent,bytebase}
 ansible/                  hosts.yml, group_vars/<group>/<role>.yml, playbooks/site.yml with one play per group, one role per concern
 docs/runbooks/            bootstrap, move-host, add-database, restore-bytebase
 ```
 
-Only one of `prod/aws`, `prod/gcp`, `prod/contabo` and `prod/tencent` holds a host at a time. Each takes `hosts = { <name> = { size = "small" | "medium" } }`.
+Only one of `prod/aws`, `prod/gcp`, `prod/contabo` and `prod/tencent` holds a host at a time. Each takes `hosts = { <name> = { size = "small" | "medium", subdomains = [...] } }`. The stack creates the VM, waits for it to join the tailnet, and points `<subdomain>.kelvinchong.dev` at its tailnet IP.
+
+## How changes reach production
+
+Every apply runs in the Deploy workflow. Open a pull request, read the plan in its checks, and merge. Never run `terraform apply` or `ansible-playbook` against production from a laptop, because the next Deploy run applies `main` and reverts anything that isn't on it. State commands such as `terraform import` are the exception, and the bootstrap runbook says when to use them.
+
+Deploy runs four jobs in order:
+
+| Job | Pull request | Merge to `main` or manual run |
+| --- | --- | --- |
+| `infrastructure` | `terraform plan` for `global/tailscale`, `global/cloudflare`, `prod/cloudflare` and `prod/<ACTIVE_CLOUD>` | `terraform apply` for the same stacks, one at a time, stopping at the first failure |
+| `gates` | Counts the hosts in the active cloud and checks for the Bytebase service account | Same |
+| `configuration` | Skipped | Runs `site.yml` over Tailscale SSH. Reads the tunnel token, Caddy DNS token and R2 backup keys from `prod/cloudflare`'s outputs. Skipped while the active cloud has no host |
+| `databases` | `terraform plan` for `prod/bytebase`, with the same skips as on `main` | `terraform apply` for `prod/bytebase`. Skipped while there is no host or no `BYTEBASE_SERVICE_KEY` |
+
+The Backup workflow runs `playbooks/backup.yml` on demand and never overlaps a Deploy run on `main`.
 
 ## Setup
 
@@ -37,34 +52,19 @@ mise install
 pre-commit install
 ```
 
-Each Terraform stack runs in an HCP Terraform workspace named `<scope>-<stack>` in Local execution mode. Set `TF_CLOUD_ORGANIZATION` and `TF_TOKEN_app_terraform_io` before `terraform init`. Run `terraform plan` and `terraform apply` from a stack directory.
-
-## Environment variables
-
-Secrets never enter git. Terraform reads them from `TF_VAR_*` and provider variables, Ansible reads them with the env lookup.
-
-| Used by | Variables |
-| --- | --- |
-| Terraform, all stacks | `TF_CLOUD_ORGANIZATION`, `TF_TOKEN_app_terraform_io` |
-| Tailscale provider | `TAILSCALE_OAUTH_CLIENT_ID`, `TAILSCALE_OAUTH_CLIENT_SECRET`, `TAILSCALE_TAILNET` |
-| Cloudflare stacks | `CLOUDFLARE_API_TOKEN`, `TF_VAR_account_id`, `TF_VAR_zone_id`. `prod/tailnet-dns` also needs the Tailscale provider variables |
-| prod/aws | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
-| prod/gcp | `GOOGLE_CREDENTIALS`, `TF_VAR_project_id` |
-| prod/contabo | `CNTB_OAUTH2_CLIENT_ID`, `CNTB_OAUTH2_CLIENT_SECRET`, `CNTB_OAUTH2_USER`, `CNTB_OAUTH2_PASS` |
-| prod/tencent | `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY` |
-| prod/bytebase | `BYTEBASE_URL`, `BYTEBASE_SERVICE_ACCOUNT`, `BYTEBASE_SERVICE_KEY`, `TF_VAR_ops_api_db_username`, `TF_VAR_ops_api_db_password` |
-| Ansible | `CLOUDFLARE_DNS_API_TOKEN`, `CLOUDFLARE_TUNNEL_TOKEN`, `BYTEBASE_POSTGRES_PASSWORD`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `OPS_DATABASE_URL`, and `TAILSCALE_AUTH_KEY` only for a host that cloud-init did not join |
-| GitHub Actions only | `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` (a Tailscale OAuth client that mints `tag:infra-ci` keys) |
+Each Terraform stack runs in an HCP Terraform workspace named `<scope>-<stack>` in Local execution mode. To plan from a laptop, export `TF_CLOUD_ORGANIZATION`, `TF_TOKEN_app_terraform_io` and the provider variables the Deploy workflow sets for that stack, then run `terraform init` and `terraform plan` in the stack directory.
 
 ## GitHub repository settings
 
-The workflows read every value below from the repository's Settings > Secrets and variables > Actions. A missing value doesn't stop CI from starting. The step that needs it fails instead, so check this list when you set up the repo or rotate a credential.
+Deploy and Backup read every value below from the repository's Settings > Secrets and variables > Actions. Secrets never enter git. A missing value doesn't stop a run from starting. The step that needs it fails instead, so check this list when you set up the repo or rotate a credential.
+
+The Cloudflare tunnel token, the Caddy DNS token and the R2 backup keys are not in this list. Terraform creates them in `prod/cloudflare`, and Deploy reads them from its outputs.
 
 ### Variables
 
 | Name | Value | Where it comes from |
 | --- | --- | --- |
-| `ACTIVE_CLOUD` | `aws`, `gcp`, `contabo` or `tencent` | The cloud the host runs on. The Terraform, Ansible and Backup workflows skip until it is set |
+| `ACTIVE_CLOUD` | `aws`, `gcp`, `contabo` or `tencent` | The cloud the host runs on. Deploy and Backup skip until it is set |
 | `TF_CLOUD_ORGANIZATION` | HCP Terraform organization name | Bootstrap step 1 |
 | `TAILSCALE_TAILNET` | Tailnet name | Tailscale admin console, Settings > General |
 | `BYTEBASE_URL` | `https://bytebase.kelvinchong.dev` | Fixed |
@@ -74,18 +74,15 @@ The workflows read every value below from the repository's Settings > Secrets an
 
 | Name | Feeds | Where it comes from |
 | --- | --- | --- |
-| `TF_TOKEN_APP_TERRAFORM_IO` | `TF_TOKEN_app_terraform_io` | An HCP Terraform user or team API token |
-| `TAILSCALE_OAUTH_CLIENT_ID`, `TAILSCALE_OAUTH_CLIENT_SECRET` | Tailscale provider | The Terraform OAuth client from bootstrap step 2.3 |
-| `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` | `tailscale/github-action` | The `tag:infra-ci` OAuth client from bootstrap step 2.4 |
+| `TF_TOKEN_APP_TERRAFORM_IO` | `TF_TOKEN_app_terraform_io` | An HCP Terraform user or team API token, bootstrap step 1 |
+| `TAILSCALE_OAUTH_CLIENT_ID`, `TAILSCALE_OAUTH_CLIENT_SECRET` | Tailscale provider | The Terraform OAuth client, bootstrap steps 2 and 7 |
+| `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` | `tailscale/github-action` | The `tag:infra-ci` OAuth client, bootstrap step 7 |
 | `CLOUDFLARE_API_TOKEN` | Cloudflare provider | The token from bootstrap step 3 |
-| `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ZONE_ID` | `TF_VAR_account_id`, `TF_VAR_zone_id` | Cloudflare dashboard, the `kelvinchong.dev` zone overview |
-| `BYTEBASE_SERVICE_ACCOUNT`, `BYTEBASE_SERVICE_KEY` | Bytebase provider | The service account from bootstrap step 8 |
-| `OPS_API_DB_USERNAME`, `OPS_API_DB_PASSWORD` | `TF_VAR_ops_api_db_username`, `TF_VAR_ops_api_db_password` | The Supabase pooler user from [add-database](docs/runbooks/add-database.md) |
-| `CLOUDFLARE_DNS_API_TOKEN` | Caddy, through Ansible | `terraform output -raw caddy_dns_token` in `prod/cloudflare`, bootstrap step 5 |
-| `CLOUDFLARE_TUNNEL_TOKEN` | cloudflared, through Ansible | `terraform output -raw tunnel_token` in `prod/cloudflare`, bootstrap step 5 |
+| `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ZONE_ID` | `TF_VAR_account_id`, `TF_VAR_zone_id`, and `R2_ACCOUNT_ID` for the backup timer | Cloudflare dashboard, the `kelvinchong.dev` zone overview |
 | `BYTEBASE_POSTGRES_PASSWORD` | Bytebase's own Postgres, through Ansible | Generate one, for example with `openssl rand -base64 32` |
-| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | The backup timer, through Ansible | The Cloudflare account id and the R2 token from bootstrap step 6 |
-| `OPS_DATABASE_URL` | The backup timer, through Ansible | The full Supabase pooler connection URL of the ops database |
+| `OPS_DATABASE_URL` | The backup timer, through Ansible | The full Supabase session pooler connection URL of the ops database |
+| `BYTEBASE_SERVICE_ACCOUNT`, `BYTEBASE_SERVICE_KEY` | Bytebase provider | The service account from bootstrap step 9 |
+| `OPS_API_DB_USERNAME`, `OPS_API_DB_PASSWORD` | `TF_VAR_ops_api_db_username`, `TF_VAR_ops_api_db_password` | The Supabase pooler user from [add-database](docs/runbooks/add-database.md) |
 
 Only the active cloud's credentials are needed. Add the others when you move the host.
 
