@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches: [main]
-    paths: [terraform/**, ansible/**, .github/workflows/deploy.yml, .github/workflows/_terraform.yml, .github/workflows/_gates.yml]
+    paths: [terraform/**, ansible/**, .github/workflows/deploy.yml, .github/workflows/reusable-terraform.yml, .github/workflows/reusable-gates.yml]
   workflow_dispatch:
 
 permissions:
@@ -16,7 +16,7 @@ concurrency:
 jobs:
   infrastructure:
     if: vars.ACTIVE_CLOUD != '' && github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/_terraform.yml
+    uses: ./.github/workflows/reusable-terraform.yml
     with:
       command: apply
       stacks: ${{ format('["global/tailscale","global/cloudflare","prod/cloudflare","prod/{0}"]', vars.ACTIVE_CLOUD) }}
@@ -24,7 +24,7 @@ jobs:
 
   gates:
     needs: infrastructure
-    uses: ./.github/workflows/_gates.yml
+    uses: ./.github/workflows/reusable-gates.yml
     secrets: inherit
 
   configuration:
@@ -82,7 +82,7 @@ jobs:
   databases:
     needs: [gates, configuration]
     if: needs.gates.outputs.hosts != '0' && needs.gates.outputs.bytebase == 'true'
-    uses: ./.github/workflows/_terraform.yml
+    uses: ./.github/workflows/reusable-terraform.yml
     with:
       command: apply
       stacks: '["prod/bytebase"]'

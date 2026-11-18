@@ -2,7 +2,7 @@ name: Plan
 
 on:
   pull_request:
-    paths: [terraform/**, .github/workflows/plan.yml, .github/workflows/_terraform.yml, .github/workflows/_gates.yml]
+    paths: [terraform/**, .github/workflows/plan.yml, .github/workflows/reusable-terraform.yml, .github/workflows/reusable-gates.yml]
 
 permissions:
   contents: read
@@ -14,7 +14,7 @@ concurrency:
 jobs:
   infrastructure:
     if: vars.ACTIVE_CLOUD != '' && github.event.pull_request.head.repo.full_name == github.repository
-    uses: ./.github/workflows/_terraform.yml
+    uses: ./.github/workflows/reusable-terraform.yml
     with:
       command: plan
       stacks: ${{ format('["global/tailscale","global/cloudflare","prod/cloudflare","prod/{0}"]', vars.ACTIVE_CLOUD) }}
@@ -22,13 +22,13 @@ jobs:
 
   gates:
     if: vars.ACTIVE_CLOUD != '' && github.event.pull_request.head.repo.full_name == github.repository
-    uses: ./.github/workflows/_gates.yml
+    uses: ./.github/workflows/reusable-gates.yml
     secrets: inherit
 
   databases:
     needs: gates
     if: needs.gates.outputs.hosts != '0' && needs.gates.outputs.bytebase == 'true'
-    uses: ./.github/workflows/_terraform.yml
+    uses: ./.github/workflows/reusable-terraform.yml
     with:
       command: plan
       stacks: '["prod/bytebase"]'
