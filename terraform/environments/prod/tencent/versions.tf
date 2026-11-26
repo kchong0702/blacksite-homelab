@@ -4,7 +4,7 @@ terraform {
   required_providers {
     tencentcloud = {
       source  = "tencentcloudstack/tencentcloud"
-      version = "1.83.42"
+      version = "1.83.44"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
@@ -12,7 +12,7 @@ terraform {
     }
     tailscale = {
       source  = "tailscale/tailscale"
-      version = "0.29.3"
+      version = "0.30.0"
     }
   }
 }
