@@ -1,12 +1,6 @@
 terraform {
   required_version = ">= 1.11"
 
-  cloud {
-    workspaces {
-      name = "prod-contabo"
-    }
-  }
-
   required_providers {
     contabo = {
       source  = "contabo/contabo"

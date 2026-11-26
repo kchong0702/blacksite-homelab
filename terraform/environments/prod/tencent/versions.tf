@@ -1,12 +1,6 @@
 terraform {
   required_version = ">= 1.11"
 
-  cloud {
-    workspaces {
-      name = "prod-tencent"
-    }
-  }
-
   required_providers {
     tencentcloud = {
       source  = "tencentcloudstack/tencentcloud"

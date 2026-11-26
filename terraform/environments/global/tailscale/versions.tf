@@ -1,12 +1,6 @@
 terraform {
   required_version = ">= 1.11"
 
-  cloud {
-    workspaces {
-      name = "global-tailscale"
-    }
-  }
-
   required_providers {
     tailscale = {
       source  = "tailscale/tailscale"
