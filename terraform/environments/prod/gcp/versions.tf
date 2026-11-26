@@ -4,7 +4,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "8.11.0"
+      version = "8.12.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
@@ -12,7 +12,7 @@ terraform {
     }
     tailscale = {
       source  = "tailscale/tailscale"
-      version = "0.29.3"
+      version = "0.30.0"
     }
   }
 }
