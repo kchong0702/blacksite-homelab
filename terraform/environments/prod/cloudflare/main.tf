@@ -10,6 +10,11 @@ data "cloudflare_api_token_permission_groups_list" "dns_write" {
   scope = "com.cloudflare.api.account.zone"
 }
 
+data "cloudflare_api_token_permission_groups_list" "pages_write" {
+  name  = "Pages%20Write"
+  scope = "com.cloudflare.api.account"
+}
+
 data "cloudflare_api_token_permission_groups_list" "r2_object_write" {
   name = "Workers%20R2%20Storage%20Bucket%20Item%20Write"
 }
@@ -71,6 +76,16 @@ resource "cloudflare_api_token" "caddy_dns" {
       { id = data.cloudflare_api_token_permission_groups_list.zone_read.result[0].id },
     ]
     resources = jsonencode({ "com.cloudflare.api.account.zone.${var.zone_id}" = "*" })
+  }]
+}
+
+resource "cloudflare_api_token" "pages_deploy" {
+  name = "renderverse-pages-deploy"
+
+  policies = [{
+    effect            = "allow"
+    permission_groups = [{ id = data.cloudflare_api_token_permission_groups_list.pages_write.result[0].id }]
+    resources         = jsonencode({ "com.cloudflare.api.account.${var.account_id}" = "*" })
   }]
 }
 

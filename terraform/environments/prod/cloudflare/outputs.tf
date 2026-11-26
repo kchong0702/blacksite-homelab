@@ -20,6 +20,12 @@ output "caddy_dns_token" {
   sensitive   = true
 }
 
+output "pages_deploy_token" {
+  description = "API token renderverse CI uses to deploy to Cloudflare Pages."
+  value       = cloudflare_api_token.pages_deploy.value
+  sensitive   = true
+}
+
 output "backups_access_key_id" {
   description = "S3 access key ID for the backups bucket, the ID of the bucket-scoped token."
   value       = cloudflare_api_token.backups.id

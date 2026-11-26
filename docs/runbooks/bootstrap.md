@@ -34,13 +34,15 @@ Run these steps once, in order. Save every value as the secret or variable named
    - Under Environments, create `production` and limit its deployment branches to `main`.
    - Under Branches, add a rule for `main` that requires a pull request, requires the `pre-commit` and `commits` checks to pass, and requires the branch to be up to date before merging. Plan only runs when `terraform/` changes, so it can't be a required check, but the up-to-date rule makes it plan again against the latest `main`. Read that plan before merging, and Deploy applies the same change.
 
-   Then run the Deploy workflow from the Actions tab. It applies the tailnet policy, device approval, the Cloudflare zone settings, R2, the tunnel, Pages and the Caddy and backup tokens. There is no host yet, so `configuration` and `databases` skip.
+   Then run the Deploy workflow from the Actions tab. It applies the tailnet policy, device approval, the Cloudflare zone settings, R2, the tunnel, Pages and the Caddy, backup and Pages deploy tokens. There is no host yet, so `configuration` and `databases` skip.
 
    Device approval is now on. A device you log in to the tailnet yourself waits until an admin approves it under Machines. Hosts and CI join with pre-approved keys and skip this.
 7. Step 6 created `tag:server`, `tag:infra-ci` and `tag:deploy`, so create the long-lived Tailscale OAuth clients.
    1. The Terraform client, with the scopes `policy_file`, `dns`, `feature_settings`, `devices:core:read` and `auth_keys` with `tag:server`. Save it over `TAILSCALE_OAUTH_CLIENT_ID` and `TAILSCALE_OAUTH_CLIENT_SECRET`, then delete the client from step 2.
    2. The CI client, with the `auth_keys` scope and `tag:infra-ci`. Save it as `TS_OAUTH_CLIENT_ID` and `TS_OAUTH_SECRET`. CI joined as `tag:infra-ci` can SSH in as `root`.
    3. For each app repo that deploys to the VM, such as renderverse, a client with the `auth_keys` scope and `tag:deploy`, saved in that repo's GitHub secrets. CI joined as `tag:deploy` can SSH in only as `deploy`.
+
+   renderverse also deploys to Pages with the `pages_deploy_token` output of `prod/cloudflare`, a token that can only edit Pages. Read it with `terraform output -raw pages_deploy_token` in `terraform/environments/prod/cloudflare`, after the init from the README's Setup section. Save it in renderverse's `production` environment as the secret `CLOUDFLARE_API_TOKEN`, and the account ID as the variable `CLOUDFLARE_ACCOUNT_ID`.
 8. Open a pull request that sets `hosts = { blacksite = { size = "medium", subdomains = ["ops", "bytebase"] } }` in the active cloud's `terraform.tfvars`, check the plan and merge it. Deploy creates the VM, which joins the tailnet as `blacksite` with `tag:server` through cloud-init, or a TencentCloud Automation Tools command on Lighthouse. It then points the `ops` and `bytebase` records at the VM's tailnet IP and runs `site.yml`.
 9. Open `https://bytebase.kelvinchong.dev` over the tailnet and sign up. The first account becomes the workspace admin. Create a service account with the Workspace Admin role and save it as `BYTEBASE_SERVICE_ACCOUNT` and `BYTEBASE_SERVICE_KEY`, and set the `BYTEBASE_URL` variable.
 10. Register the ops database with [add-database](add-database.md). The pull request it opens is the first one where `databases` runs.

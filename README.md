@@ -15,7 +15,7 @@ Infrastructure for one tailnet VM that hosts Bytebase and the renderverse backen
 
 | Tool | Owns |
 | --- | --- |
-| Terraform | Anything behind an API: the VM and its tailnet DNS records, the cloud network, Tailscale policy and DNS, Cloudflare Pages, R2 and the backup token, tunnel, DNS and zone settings, Bytebase instances |
+| Terraform | Anything behind an API: the VM and its tailnet DNS records, the cloud network, Tailscale policy and DNS, Cloudflare Pages and renderverse's Pages deploy token, R2 and the backup token, tunnel, DNS and zone settings, Bytebase instances |
 | Ansible | Anything on the VM's disk: packages, firewall, Tailscale join, Docker, Caddy, cloudflared, Bytebase, the backup timer |
 | renderverse CI | The app containers in `/srv/renderverse`. It joins the tailnet as `tag:deploy` and logs in as `deploy`. This repo never runs the app compose |
 
@@ -56,7 +56,7 @@ Each Terraform stack runs in an HCP Terraform workspace named `<scope>-<stack>` 
 
 Deploy and Backup read every value below from the repository's Settings > Secrets and variables > Actions. Secrets never enter git. A missing value doesn't stop a run from starting. The step that needs it fails instead, so check this list when you set up the repo or rotate a credential.
 
-The Cloudflare tunnel token, the Caddy DNS token and the R2 backup keys are not in this list. Terraform creates them in `prod/cloudflare`, and Deploy reads them from its outputs.
+The Cloudflare tunnel token, the Caddy DNS token and the R2 backup keys are not in this list. Terraform creates them in `prod/cloudflare`, and Deploy reads them from its outputs. Terraform also creates renderverse's Pages deploy token there, which goes into renderverse's secrets by hand, as bootstrap step 7 describes.
 
 ### Variables
 
